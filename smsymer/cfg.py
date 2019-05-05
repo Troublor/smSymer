@@ -1,12 +1,12 @@
 import copy
 from functools import reduce
-from typing import List, Tuple, Union, Dict
+from typing import List, Dict
 
-from z3 import Solver, Not
+from z3 import Not
 
-from analysisVM import AnalysisVM, TimestampDepTracker, RefTracker, CallResultTracker, ReentrancyTracker
-from disassemble import Instruction
-from executor import VM, PcPointer
+from smsymer.analysisVM import AnalysisVM, TimestampDepTracker, RefTracker, CallResultTracker, ReentrancyTracker
+from smsymer.disassemble import Instruction
+from smsymer.executor import PcPointer
 
 recursion_depth = 0
 

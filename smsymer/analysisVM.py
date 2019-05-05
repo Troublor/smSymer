@@ -1,11 +1,11 @@
 import copy
 from typing import List
 
-from z3 import eq, simplify, Z3Exception, Int
+from z3 import eq, simplify, Z3Exception
 
-import utils
-from disassemble import Instruction
-from executor import VM, PcPointer
+from smsymer import utils
+from smsymer.disassemble import Instruction
+from smsymer.executor import VM, PcPointer
 
 
 class AnalyzerException(object):

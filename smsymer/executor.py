@@ -1,15 +1,13 @@
 import copy
-from random import random
-from typing import Union, List
+from typing import Union
 
 from Crypto.Hash import keccak
 
 # 单字中包含的字节数
-from z3 import BitVec, BoolRef, BitVecRef, Real, Int, Not
+from z3 import BoolRef, Int, Not
 
-import disassemble
-import utils
-from disassemble import Instruction
+from smsymer import utils
+from smsymer.disassemble import Instruction
 
 l_word = 4
 

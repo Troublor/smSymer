@@ -1,10 +1,9 @@
 import subprocess
 from typing import List
 
-from z3 import BitVecRef, BoolRef, Solver, Z3_L_TRUE, Z3_L_FALSE, AstRef, is_expr
+from z3 import BoolRef, Solver, Z3_L_TRUE, Z3_L_FALSE, is_expr
 
-import disassemble
-from disassemble import Instruction
+from smsymer.disassemble import Instruction
 
 
 def is_symbol(var):
