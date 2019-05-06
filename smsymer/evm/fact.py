@@ -83,9 +83,9 @@ opcodes = {
     0xa4: ['LOG4', 6, 0, 1875, 0],
 
     # arbitrary length storage (proposal for metropolis hardfork)
-    0xe1: ['SLOADBYTES', 3, 0, 50, 0],
-    0xe2: ['SSTOREBYTES', 3, 0, 0, 0],
-    0xe3: ['SSIZE', 1, 1, 50, 0],
+    # 0xe1: ['SLOADBYTES', 3, 0, 50, 0],
+    # 0xe2: ['SSTOREBYTES', 3, 0, 0, 0],
+    # 0xe3: ['SSIZE', 1, 1, 50, 0],
 
     # closures
     0xf0: ['CREATE', 3, 1, 32000, 0],
