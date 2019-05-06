@@ -69,7 +69,7 @@ class CFG(object):
                 # including loop, every block can only be visited twice
                 try:
                     self.df_traverse_cfg(func, tran.to_.address, path, cond,
-                                     self.branch_entry_state[tran.from_.lass_address])
+                                         self.branch_entry_state[tran.from_.lass_address])
                 except KeyError as e:
                     print(e)
             path.pop(-1)
@@ -111,8 +111,10 @@ class CFG(object):
         return False
 
     def _build_transitions(self):
+        recursion_depth = 0
+
         def _traverse_block_recursively(pc_b):
-            global recursion_depth
+            nonlocal recursion_depth
             block = self.blocks[pc_b]
             print("Traverse block {0}".format(block))
             pc_i = 0
