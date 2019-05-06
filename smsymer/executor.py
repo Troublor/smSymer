@@ -649,7 +649,7 @@ class VM(object):
         if utils.is_symbol(value):
             self._stack_push(Int("SHA3_{0}".format(self._pc)))
         else:
-            value = bytes(utils.int2bytes(value))
+            value = bytes(utils.int2bytes_string(value))
             keccak_hash = keccak.new(digest_bits=8 * l_word)
             keccak_hash.update(value)
             hash_value = keccak_hash.hexdigest()

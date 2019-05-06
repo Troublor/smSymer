@@ -12,6 +12,8 @@ from .storage import Storage
 from .pcPointer import PcPointer
 from .exception import EvmExecutionException
 
+l_word = 32
+
 
 class EVM(object):
     def __init__(self):
@@ -48,7 +50,7 @@ class EVM(object):
             opr = getattr(self, "SWAP")
             opr(int(instruction.opcode[4:]))
         elif instruction.opcode.startswith("LOG"):
-            opr = getattr(self, "SWAP")
+            opr = getattr(self, "LOG")
             opr(int(instruction.opcode[3:]))
         else:
             opr = getattr(self, instruction.opcode)
@@ -210,7 +212,9 @@ class EVM(object):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
         t = l_word * 8 - 8 * (int(op0) + 1)
-        self._stack_push(op1.sign_extend(t))
+        if utils.is_symbol(op1):
+            raise EvmExecutionException("SIGNEXTEND does not support symbolic execution")
+        self._stack_push(Word(op1).sign_extend(t))
 
     def LT(self):
         op0 = self._stack_pop()
@@ -225,12 +229,16 @@ class EVM(object):
     def SLT(self):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
-        self._stack_push(op0.slt(op1))
+        if utils.is_symbol(op0) or utils.is_symbol(op1):
+            raise EvmExecutionException("SLT does not support symbolic execution")
+        self._stack_push(Word(op0).slt(Word(op1)))
 
     def SGT(self):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
-        self._stack_push(op0.sgt(op1))
+        if utils.is_symbol(op0) or utils.is_symbol(op1):
+            raise EvmExecutionException("SLT does not support symbolic execution")
+        self._stack_push(Word(op0).sgt(Word(op1)))
 
     def EQ(self):
         op0 = self._stack_pop()
@@ -284,7 +292,11 @@ class EVM(object):
     def BYTE(self):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
-        self._stack_push(op1.retrieve_byte(int(op0)))
+        if utils.is_symbol(op1) or utils.is_symbol(op0):
+            self._stack_push(Int("byte_{0}".format(self._pc)))
+        else:
+            b = utils.int2bytes(op1, l_word=l_word, type_=int)
+            self._stack_push(b[op0])
 
     def SHL(self):
         op0 = self._stack_pop()
@@ -301,14 +313,14 @@ class EVM(object):
         value = self._memory.load(int(op0), int(op1))
         if utils.is_symbol(value):
             self._stack_push(Int("SHA3_{0}".format(self._pc)))
+            return
         else:
-            value = bytes(utils.int2bytes(value))
+            value = bytes(utils.int2bytes(value, type_=int))
             keccak_hash = keccak.new(digest_bits=8 * l_word)
             keccak_hash.update(value)
             hash_value = keccak_hash.hexdigest()
             self._stack_push(Word(hash_value))
             return
-        self._stack_push(Int("m_" + str(op0) + "_" + str(op1)))
 
     def ADDRESS(self):
         self._stack_push(Int("Ia"))
@@ -361,10 +373,17 @@ class EVM(object):
         self._stack_push(Int("Ip"))
 
     def EXTCODESIZE(self):
-        raise EvmExecutionException("Operation not supported: EXTCODESIZE")
+        # raise EvmExecutionException("Operation not supported: EXTCODESIZE")
+        op0 = self._stack_pop()
+        self._stack_push(Int("codesize_{0}".format(self._pc)))
 
     def EXTCODECOPY(self):
-        raise EvmExecutionException("Operation not supported: EXTCODECOPY")
+        # raise EvmExecutionException("Operation not supported: EXTCODECOPY")
+        op0 = self._stack_pop()
+        op1 = self._stack_pop()
+        op2 = self._stack_pop()
+        op3 = self._stack_pop()
+        self._memory.store(op1, op3, Int("codecopy_{0}".format(self._pc)))
 
     def RETURNDATASIZE(self):
         # raise VmExecutionException("Operation not supported: RETURNDATASIZE")
@@ -528,6 +547,7 @@ class EVM(object):
         op3 = self._stack_pop()
         op4 = self._stack_pop()
         op5 = self._stack_pop()
+        op6 = self._stack_pop()
         self._stack_push(Int("callcode_{0}".format(self._pc)))
 
     def STATICCALL(self):
