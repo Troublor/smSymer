@@ -43,7 +43,7 @@ def test_unchecked_call1():
 
 def test_unchecked_call2():
     cwd = getcwd()
-    file = path.join(cwd, 'test/unchecked_call2.sol')
+    file = path.join(cwd, 'unchecked_call2.sol')
     bytecodes = utils.compile_sol(file)
     instructions = disasm(bytecodes)
     symer = SmSymer(instructions)
