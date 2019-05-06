@@ -2,7 +2,7 @@ import copy
 from typing import List
 
 from smsymer.analyzer.exception import AnalyzerException
-from smsymer.evm import Instruction
+from smsymer.evm import Instruction, Stack
 
 
 class RefTracker(object):
@@ -15,7 +15,8 @@ class RefTracker(object):
         self.used: bool = False
         self.use_addrs: List[int] = []
 
-    def update(self, instruction: Instruction, stack_len: int):
+    def update(self, instruction: Instruction, stack: Stack):
+        stack_len = len(stack)
         if instruction.opcode == "POP":
             self.pop(1, stack_len)
         elif 0x7f < instruction.bytecode < 0x7f + 17:
@@ -33,7 +34,7 @@ class RefTracker(object):
         elif instruction.opcode == "SHA3":
             self.sha3(stack_len)
         else:
-            self.op(instruction, stack_len)
+            self.op(instruction, stack)
 
     def new(self, h):
         self.h_list.append(h)
@@ -117,7 +118,7 @@ class RefTracker(object):
         # need implementation, the logic of buggy
         return self.used
 
-    def op(self, instruction: Instruction, stack_len: int):
+    def op(self, instruction: Instruction, stack: Stack):
         # need implementation, define how to deal with other operations
         # by default, it view every other operation as use of the reference
-        self.use(instruction, stack_len)
+        self.use(instruction, len(stack))

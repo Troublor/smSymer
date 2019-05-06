@@ -1,5 +1,5 @@
 from smsymer.analyzer.tool import RefTracker
-from smsymer.evm import Instruction
+from smsymer.evm import Instruction, Stack
 
 
 class TimestampDepTracker(RefTracker):
@@ -10,9 +10,9 @@ class TimestampDepTracker(RefTracker):
     def is_buggy(self):
         return self.used is True
 
-    def op(self, instruction: Instruction, stack_len: int):
+    def op(self, instruction: Instruction, stack: Stack):
         # cases that the timestamp is used in conditional jump
         if instruction.opcode == "JUMPI":
-            self.use(instruction, stack_len)
+            self.use(instruction, len(stack))
         else:
-            self.pop(instruction.input_amount, stack_len)
+            self.pop(instruction.input_amount, len(stack))

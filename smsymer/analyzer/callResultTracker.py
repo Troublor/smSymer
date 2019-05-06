@@ -1,3 +1,4 @@
+from smsymer.evm import Stack
 from .tool import RefTracker
 from smsymer.disassemble import Instruction
 
@@ -10,11 +11,11 @@ class CallResultTracker(RefTracker):
     def is_buggy(self):
         return self.used is False
 
-    def op(self, instruction: Instruction, stack_len: int):
+    def op(self, instruction: Instruction, stack: Stack):
         # cases that the result of call is actually checked
         if instruction.opcode == "JUMPI":
-            self.use(instruction, stack_len)
+            self.use(instruction, len(stack))
         elif instruction.opcode == "RETURN":
-            self.use(instruction, stack_len)
+            self.use(instruction, len(stack))
         else:
-            self.pop(instruction.input_amount, stack_len)
+            self.pop(instruction.input_amount, len(stack))
