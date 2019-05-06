@@ -181,7 +181,8 @@ class EVM(object):
         if not utils.is_symbol(op0) and not utils.is_symbol(op1):
             self._stack_push(Word(op0).smod(Word(op1)))
         else:
-            raise EvmExecutionException("SMOD not support symbolic execution")
+            # raise EvmExecutionException("SMOD not support symbolic execution")
+            self._stack_push(Int("smod_{0}".format(self._pc)))
 
     def ADDMOD(self):
         # All intermediate calculations of this operation are not subject to the 2^256 modulo
@@ -213,8 +214,10 @@ class EVM(object):
         op1 = self._stack_pop()
         t = l_word * 8 - 8 * (int(op0) + 1)
         if utils.is_symbol(op1):
-            raise EvmExecutionException("SIGNEXTEND does not support symbolic execution")
-        self._stack_push(Word(op1).sign_extend(t))
+            # raise EvmExecutionException("SIGNEXTEND does not support symbolic execution")
+            self._stack_push(Int("signextend_{0}".format(self._pc)))
+        else:
+            self._stack_push(Word(op1).sign_extend(t))
 
     def LT(self):
         op0 = self._stack_pop()
@@ -230,15 +233,19 @@ class EVM(object):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
         if utils.is_symbol(op0) or utils.is_symbol(op1):
-            raise EvmExecutionException("SLT does not support symbolic execution")
-        self._stack_push(Word(op0).slt(Word(op1)))
+            # raise EvmExecutionException("SLT does not support symbolic execution")
+            self._stack_push(Int("slt_{0}".format(self._pc)))
+        else:
+            self._stack_push(Word(op0).slt(Word(op1)))
 
     def SGT(self):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
         if utils.is_symbol(op0) or utils.is_symbol(op1):
-            raise EvmExecutionException("SLT does not support symbolic execution")
-        self._stack_push(Word(op0).sgt(Word(op1)))
+            # raise EvmExecutionException("SLT does not support symbolic execution")
+            self._stack_push(Int("sgt_{0}".format(self._pc)))
+        else:
+            self._stack_push(Word(op0).sgt(Word(op1)))
 
     def EQ(self):
         op0 = self._stack_pop()
