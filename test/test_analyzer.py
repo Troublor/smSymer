@@ -31,3 +31,11 @@ def test_unchecked_call0():
     symer = SmSymer(instructions)
     assert symer.unchecked_call
 
+
+def test_unchecked_call1():
+    cwd = getcwd()
+    file = path.join(cwd, 'unchecked_call1.sol')
+    bytecodes = utils.compile_sol(file)
+    instructions = disasm(bytecodes)
+    symer = SmSymer(instructions)
+    assert not symer.unchecked_call
