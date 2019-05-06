@@ -60,13 +60,26 @@ def uuid() -> str:
     return str(o)
 
 
-def int2bytes(content) -> List[int]:
+def int2bytes(content, l_word=-1, type_=int) -> List:
+    """
+    Convert int to byte list
+    :param type_: the type of every item in byte list
+    :param content: int
+    :param l_word: the length of bytes
+    :return: List[type_]
+    """
     if is_symbol(content):
         raise AttributeError("Can not convert symbolic value to bytes")
     r = []
     tmp = hex(int(content))[2:]
     if len(tmp) % 2 == 1:
         tmp = "0" + tmp
+    tmp = tmp.ljust(l_word * 2, '0')
     for i in range(0, len(tmp), 2):
-        r.append(int(tmp[i:i + 1], 16))
+        if type_ == int:
+            r.append(int(tmp[i:i + 1], 16))
+        elif type_ == str:
+            r.append(tmp[i:i + 1])
+        else:
+            r.append(type_(tmp[i:i + 1]))
     return r
