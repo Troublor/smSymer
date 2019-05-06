@@ -21,3 +21,13 @@ def test_timestamp_dependency1():
     instructions = disasm(bytecodes)
     symer = SmSymer(instructions)
     assert not symer.timestamp_dependency
+
+
+def test_unchecked_call0():
+    cwd = getcwd()
+    file = path.join(cwd, 'unchecked_call0.sol')
+    bytecodes = utils.compile_sol(file)
+    instructions = disasm(bytecodes)
+    symer = SmSymer(instructions)
+    assert symer.unchecked_call
+
