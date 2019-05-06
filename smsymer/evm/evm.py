@@ -176,7 +176,10 @@ class EVM(object):
     def SMOD(self):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
-        self._stack_push(op0.smod(op1))
+        if not utils.is_symbol(op0) and not utils.is_symbol(op1):
+            self._stack_push(Word(op0).smod(Word(op1)))
+        else:
+            raise EvmExecutionException("SMOD not support symbolic execution")
 
     def ADDMOD(self):
         # All intermediate calculations of this operation are not subject to the 2^256 modulo
