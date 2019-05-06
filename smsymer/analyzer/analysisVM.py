@@ -25,16 +25,10 @@ class AnalysisVM(EVM):
     def _update_all_ref_tracker(self, instruction: Instruction):
         # update all the references
         for ref in self.call_result_references + self.timestamp_references + self.reentrancy_references:
-            ref.update(instruction, len(self._stack))
+            ref.update(instruction, self._stack)
         # check if there are new references
         if instruction.opcode in ['CALL', "STATICCALL", "DELEGATECALL", "CALLCODE"]:
-            gas = self._stack[-1]
-            # check the gas forwarded
-            if not utils.is_symbol(gas) and (int(gas) == 0 or int(gas) == 2300):
-                return
-            if '2300' in str(gas):
-                return
-                # new call result reference is generated
+            # new call result reference is generated
             h = len(self._stack) - instruction.input_amount
             call_ref = CallResultTracker(instruction.addr, h)
             self.call_result_references.append(call_ref)
