@@ -48,3 +48,30 @@ def test_unchecked_call2():
     instructions = disasm(bytecodes)
     symer = SmSymer(instructions)
     assert symer.unchecked_call
+
+
+def test_reentrancy0():
+    cwd = getcwd()
+    file = path.join(cwd, 'reentrancy0.sol')
+    bytecodes = utils.compile_sol(file)
+    instructions = disasm(bytecodes)
+    symer = SmSymer(instructions)
+    assert not symer.reentrancy
+
+
+def test_reentrancy1():
+    cwd = getcwd()
+    file = path.join(cwd, 'reentrancy1.sol')
+    bytecodes = utils.compile_sol(file)
+    instructions = disasm(bytecodes)
+    symer = SmSymer(instructions)
+    assert not symer.reentrancy
+
+
+def test_reentrancy2():
+    cwd = getcwd()
+    file = path.join(cwd, 'reentrancy2.sol')
+    bytecodes = utils.compile_sol(file)
+    instructions = disasm(bytecodes)
+    symer = SmSymer(instructions)
+    assert symer.reentrancy
