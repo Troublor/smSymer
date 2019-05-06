@@ -3,6 +3,7 @@ from typing import Union
 
 l_word = 4
 
+# schema: [opcode, ins, outs, gas, params]
 opcodes = {
     # arithmetic
     0x00: ['STOP', 0, 0, 0, 0],
