@@ -14,3 +14,10 @@ def test_timestamp_dependency0():
     assert symer.timestamp_dependency
 
 
+def test_timestamp_dependency1():
+    cwd = getcwd()
+    file = path.join(cwd, 'timestamp_dependency1.sol')
+    bytecodes = utils.compile_sol(file)
+    instructions = disasm(bytecodes)
+    symer = SmSymer(instructions)
+    assert not symer.timestamp_dependency
