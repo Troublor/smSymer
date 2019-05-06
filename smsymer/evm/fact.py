@@ -1,4 +1,6 @@
 # length of word
+from typing import Union
+
 l_word = 4
 
 opcodes = {
