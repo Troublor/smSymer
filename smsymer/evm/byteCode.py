@@ -60,8 +60,9 @@ class ByteCode(object):
             for ii in range(n_param):
                 next_byte = cls._next_byte()
                 if next_byte is None:
-                    raise InsufficientInputException(byte, ii + 1, n_param)
-                    # return instructions
+                    # raise InsufficientInputException(byte, ii + 1, n_param)
+                    print("Incomplete push instruction at {0}".format(address))
+                    return instructions
                 inputs.append(hex(next_byte)[2:])
             instructions.append(Instruction(address, byte, get_operation_name(byte), inputs))
             byte = cls._next_byte()
