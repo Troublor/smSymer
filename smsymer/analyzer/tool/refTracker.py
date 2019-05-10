@@ -1,8 +1,8 @@
 import copy
 from typing import List
 
-from smsymer.analyzer.exception import AnalyzerException
-from smsymer.evm import Instruction, Stack
+from main.analyzer.exception import AnalyzerException
+from main.evm import Instruction, Stack
 
 
 class RefTracker(object):

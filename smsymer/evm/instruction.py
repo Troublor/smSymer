@@ -1,8 +1,7 @@
 from typing import Union, List
 
-from smsymer.disassemble import get_param_amount
 from smsymer.evm.exception import InvalidOperationException, InsufficientInputException
-from smsymer.evm.fact import get_operation_name, opcodes, get_input_amount, get_output_amount
+from smsymer.evm.fact import get_operation_name, opcodes, get_input_amount, get_output_amount, get_param_amount
 
 
 class Instruction(object):

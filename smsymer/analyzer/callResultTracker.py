@@ -1,6 +1,6 @@
 from smsymer.evm import Stack
 from .tool import RefTracker
-from smsymer.disassemble import Instruction
+from smsymer.evm import Instruction
 
 
 class CallResultTracker(RefTracker):
