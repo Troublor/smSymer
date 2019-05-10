@@ -11,6 +11,10 @@ class CallResultTracker(RefTracker):
     def is_buggy(self):
         return self.used is False
 
+    @property
+    def root_cause_addr(self):
+        return self.addr
+
     def op(self, instruction: Instruction, stack: Stack):
         # cases that the result of call is actually checked
         if instruction.opcode == "JUMPI":

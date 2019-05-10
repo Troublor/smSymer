@@ -19,6 +19,10 @@ class ReentrancyTracker(RefTracker):
         self.changed_after_condition = False
         self.changed_before_call = False
 
+        self.buggy = False
+
+        self.vulnerable_calls = []
+
     def __eq__(self, other):
         return self.storage_addr == other.storage_addr
 
@@ -30,18 +34,14 @@ class ReentrancyTracker(RefTracker):
 
     @property
     def is_buggy(self):
-        # There is no reentrancy bug only when some storage values used in path conditions
-        # are changed after the condition and before the call operation
-        if self.gas_guarded:
-            return False
-        if self.changed_after_condition and self.changed_before_call:
-            return False
-        else:
-            return True
+        return self.buggy
 
     def op(self, instruction: Instruction, stack: Stack):
         # cases that storage variables are used in the path condition of a CALL operation
         if instruction.opcode == "JUMPI":
+            # make sure that the condition is the direct condition of CALL, WRONG, but may have false positives...
+            # self.used = False
+            # check if current condition contains Storage variable
             self.use(instruction, len(stack))
             if self.used is True:
                 self.after_used_in_condition = True
@@ -58,6 +58,15 @@ class ReentrancyTracker(RefTracker):
                 return
             if not self.after_call and self.storage_changed:
                 self.changed_before_call = True
+                # There is no reentrancy bug only when some storage values used in path conditions
+                # are changed after the condition and before the call operation
+                if not self.changed_after_condition or not self.changed_before_call:
+                    self.buggy = True
+                    self.vulnerable_calls.append(instruction.addr)
+                    # clear detection history, be prepare for the next reentrancy
+                    self.after_call = False
+                    self.changed_before_call = False
+                    return
             self.after_call = True
         else:
             self.pop(instruction.input_amount, len(stack))

@@ -10,6 +10,10 @@ class TimestampDepTracker(RefTracker):
     def is_buggy(self):
         return self.used is True
 
+    @property
+    def root_cause_addr(self):
+        return self.addr
+
     def op(self, instruction: Instruction, stack: Stack):
         # cases that the timestamp is used in conditional jump
         if instruction.opcode == "JUMPI":
