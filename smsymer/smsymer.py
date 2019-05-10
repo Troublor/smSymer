@@ -101,7 +101,7 @@ class SmSymer(object):
             # check reentrancy bug
             # identify storage variables that are used in path conditions
 
-        self.body_cfg.df_traverse_cfg(print_blocks_with_call, 0, [0], [], AnalysisVM.init_state())
+        # self.body_cfg.df_traverse_cfg(print_blocks_with_call, 0, [0], [], AnalysisVM.init_state())
         for ref in self.body_cfg.buggy_refs.values():
             if isinstance(ref, ReentrancyTracker) and ref.is_buggy:
                 return True

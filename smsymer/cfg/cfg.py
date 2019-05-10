@@ -116,7 +116,7 @@ class CFG(object):
         def _traverse_block_recursively(pc_b):
             nonlocal recursion_depth
             block = self.blocks[pc_b]
-            print("Traverse block {0}".format(block))
+            # print("Traverse block {0}".format(block))
             pc_i = 0
             while True:
                 ins = block[pc_i]
@@ -130,7 +130,7 @@ class CFG(object):
                     else:
                         pc_i = pc_i + 1
                 elif pc_pointer.status == PcPointer.STOP:
-                    print("END AT-" + str(block) + "-" + str(recursion_depth))
+                    # print("END AT-" + str(block) + "-" + str(recursion_depth))
                     bak = self.vm.backup()
                     self.branch_entry_state[block.lass_address] = copy.deepcopy(bak)
                     break
@@ -139,8 +139,8 @@ class CFG(object):
                     bak = self.vm.backup()
                     self.branch_entry_state[last_block.lass_address] = copy.deepcopy(bak)
                     pc_bb = self._get_block_index(pc_pointer.addr)
-                    if pc_bb is None:
-                        print(False)
+                    # if pc_bb is None:
+                    #     print(False)
                     is_loop = self._add_transition(last_block, self.blocks[pc_bb])
                     if not is_loop:
                         _traverse_block_recursively(pc_bb)
@@ -150,17 +150,17 @@ class CFG(object):
                     recursion_depth += 1
 
                     last_block = self.blocks[pc_b]
-                    print("BRANCH-AT-" + str(last_block) + "-" + str(recursion_depth) + "-" + str(pc_pointer.condition))
+                    # print("BRANCH-AT-" + str(last_block) + "-" + str(recursion_depth) + "-" + str(pc_pointer.condition))
                     bak = self.vm.backup()
                     self.branch_entry_state[last_block.lass_address] = copy.deepcopy(bak)
 
                     # suppose condition is true
                     pc_bb = self._get_block_index(pc_pointer.addr)
-                    if pc_bb is None:
-                        print(False)
+                    # if pc_bb is None:
+                    #     print(False)
                     is_loop = self._add_transition(last_block, self.blocks[pc_bb], pc_pointer.condition)
                     if not is_loop:
-                        print("BRANCH-1: {0}".format(self.blocks[pc_bb]))
+                        # print("BRANCH-1: {0}".format(self.blocks[pc_bb]))
                         bak = self.vm.backup()
                         _traverse_block_recursively(pc_bb)
                         # save the buggy references before trace back
@@ -173,9 +173,9 @@ class CFG(object):
                     pc_bb = pc_b + 1
                     is_loop = self._add_transition(last_block, self.blocks[pc_bb], Not(pc_pointer.condition))
                     if not is_loop:
-                        print("BRANCH-2: {0}".format(self.blocks[pc_bb]))
+                        # print("BRANCH-2: {0}".format(self.blocks[pc_bb]))
                         _traverse_block_recursively(pc_bb)
-                    print("END-BRANCH-" + str(recursion_depth))
+                    # print("END-BRANCH-" + str(recursion_depth))
                     recursion_depth -= 1
                     break
 
