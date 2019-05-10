@@ -89,6 +89,8 @@ class AnalysisVM(EVM):
                 if utils.is_symbol(value) and not eq(simplify(value), simplify(self._storage[ref.storage_addr])) or \
                         not utils.is_symbol(value) and value != self._storage[ref.storage_addr]:
                     ref.storage_changed = True
-                    if ref.contains_call is False:
-                        ref.sstore_before_call = True
+                    if ref.after_used_in_condition:
+                        ref.changed_after_condition = True
+                    if not ref.after_call:
+                        ref.changed_before_call = True
         return pc_pointer

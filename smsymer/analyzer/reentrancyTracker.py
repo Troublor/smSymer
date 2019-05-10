@@ -8,9 +8,16 @@ class ReentrancyTracker(RefTracker):
     def __init__(self, addr: int, height: int, storage_addr):
         super().__init__(addr, height)
         self.storage_addr = storage_addr
-        self.contains_call = False
+
+        self.after_used_in_condition = False
+        self.after_call = False
+
         self.storage_changed = False
-        self.sstore_before_call = False
+
+        self.gas_guarded = False
+
+        self.changed_after_condition = False
+        self.changed_before_call = False
 
     def __eq__(self, other):
         return self.storage_addr == other.storage_addr
@@ -23,19 +30,34 @@ class ReentrancyTracker(RefTracker):
 
     @property
     def is_buggy(self):
-        return self.used and self.contains_call and (not self.sstore_before_call or not self.storage_changed)
+        # There is no reentrancy bug only when some storage values used in path conditions
+        # are changed after the condition and before the call operation
+        if self.gas_guarded:
+            return False
+        if self.changed_after_condition and self.changed_before_call:
+            return False
+        else:
+            return True
 
     def op(self, instruction: Instruction, stack: Stack):
         # cases that storage variables are used in the path condition of a CALL operation
         if instruction.opcode == "JUMPI":
             self.use(instruction, len(stack))
+            if self.used is True:
+                self.after_used_in_condition = True
         elif instruction.opcode in ["CALL", "STATICCALL", "DELEGATECALL", "CALLCODE"]:
             # check the gas forwarded
+            self.pop(instruction.input_amount, len(stack))
+            self.new(len(stack) - instruction.input_amount)
             gas = stack[-1]
             if not utils.is_symbol(gas) and (int(gas) == 0 or int(gas) == 2300):
+                self.gas_guarded = True
                 return
             if '2300' in str(gas):
+                self.gas_guarded = True
                 return
-            self.contains_call = True
+            if not self.after_call and self.storage_changed:
+                self.changed_before_call = True
+            self.after_call = True
         else:
             self.pop(instruction.input_amount, len(stack))
