@@ -26,11 +26,9 @@ class Printer(object):
         elif self.type == Printer.CONSOLE:
             if type(msg) is list:
                 for m in msg:
-                    sys.stdout.write("{}\n".format(m))
-                    sys.stdout.flush()
+                    print("{}".format(m))
             else:
-                sys.stdout.write("{}\n".format(msg))
-                sys.stdout.flush()
+                print("{}".format(msg))
         else:
             raise AttributeError("Wrong printer type")
 
@@ -45,11 +43,9 @@ class Printer(object):
         elif self.type == Printer.CONSOLE:
             if type(error_msg) is list:
                 for msg in error_msg:
-                    sys.stderr.write("[ERROR] {}\n".format(msg))
-                    sys.stderr.flush()
+                    Printer.red_print("[ERROR] {}".format(msg))
             else:
-                sys.stderr.write("[ERROR] {}\n".format(error_msg))
-                sys.stderr.flush()
+                Printer.red_print("[ERROR] {}".format(error_msg))
         else:
             raise AttributeError("Wrong printer type")
 
@@ -64,11 +60,9 @@ class Printer(object):
         elif self.type == Printer.CONSOLE:
             if type(info_msg) is list:
                 for msg in info_msg:
-                    sys.stdout.write("[INFO] {}\n".format(msg))
-                    sys.stdout.flush()
+                    print("[INFO] {}".format(msg))
             else:
-                sys.stdout.write("[INFO] {}\n".format(info_msg))
-                sys.stdout.flush()
+                print("[INFO] {}".format(info_msg))
         else:
             raise AttributeError("Wrong printer type")
 
@@ -83,10 +77,12 @@ class Printer(object):
         elif self.type == Printer.CONSOLE:
             if type(warn_msg) is list:
                 for msg in warn_msg:
-                    sys.stderr.write("[WARN] {}\n".format(msg))
-                    sys.stderr.flush()
+                    Printer.red_print("[WARN] {}".format(msg))
             else:
-                sys.stderr.write("[WARN] {}\n".format(warn_msg))
-                sys.stderr.flush()
+                Printer.red_print("[WARN] {}".format(warn_msg))
         else:
             raise AttributeError("Wrong printer type")
+
+    @staticmethod
+    def red_print(msg: str):
+        print("\033[0;31;m{0}\033[0m".format(msg))

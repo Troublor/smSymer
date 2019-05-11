@@ -4,7 +4,8 @@ from typing import List, Dict
 
 from z3 import Not
 
-from smsymer.analyzer import AnalysisVM
+from smsymer import Printer
+from smsymer.analyzer import AnalysisVM, TimestampDepTracker, CallResultTracker, ReentrancyTracker
 from smsymer.analyzer.tool import RefTracker
 from smsymer.evm import PcPointer
 from .block import Block
@@ -16,7 +17,10 @@ class CFG(object):
     Control Flow Graph
     """
 
-    def __init__(self, blocks: List[Block]):
+    def __init__(self, blocks: List[Block], printer: Printer, verbose=False):
+        self.printer = printer
+        self.verbose = verbose
+
         self.blocks = blocks
 
         self.transitions: List[Transition] = []
@@ -189,3 +193,101 @@ class CFG(object):
             if ins.addr == stop_addr:
                 break
         self.vm.retrieve(bak)
+
+    @property
+    def instructions(self):
+        return reduce(lambda x, y: x + y, map(lambda b: b.instructions, self.blocks))
+
+    def get_instruction(self, addr: int):
+        for ins in self.instructions:
+            if ins.addr == addr:
+                return ins
+        return addr
+
+    def check_timestamp_dependency(self) -> dict:
+        # for t in self.construct_cfg.transitions:
+        #     if "IHs" in str(t.constrain):
+        #         self.report.timestamp_dependency = True
+        # for t in self.body_cfg.transitions:
+        #     if "IHs" in str(t.constrain):
+        #         self.report.timestamp_dependency = True
+        # return self.report.timestamp_dependency
+        r = {
+            "vulnerable": False,
+            "spots": []
+        }
+        for ref in self.buggy_refs.values():
+            if isinstance(ref, TimestampDepTracker) and ref.is_buggy:
+                r["vulnerable"] = True
+                report = {
+                    "timestamp_address": ref.root_cause_addr,
+                    "dependency_address": ref.dependency_addr
+                }
+                r["spots"].append(report)
+        return r
+
+    def check_unchecked_call(self) -> dict:
+        r = {
+            "vulnerable": False,
+            "spots": []
+        }
+        for ref in self.buggy_refs.values():
+            if isinstance(ref, CallResultTracker) and ref.is_buggy:
+                r["vulnerable"] = True
+                report = {
+                    "call_address": ref.root_cause_addr,
+                }
+                r["spots"].append(report)
+        return r
+
+    def check_reentrancy(self) -> dict:
+        def print_blocks_with_call(block_seq: List[Block], exe_path: List[int], path_condition: List, entry_state):
+            for block in block_seq:
+                if block.contains_call():
+                    break
+            else:
+                return
+            print("----------------")
+            print(exe_path)
+            print(path_condition)
+            print("=>")
+            print(block_seq)
+            print("----------------")
+
+            # check reentrancy bug
+            # identify storage variables that are used in path conditions
+
+        # self.body_cfg.df_traverse_cfg(print_blocks_with_call, 0, [0], [], AnalysisVM.init_state())
+        r = {
+            "vulnerable": False,
+            "spots": []
+        }
+        for ref in self.buggy_refs.values():
+            if isinstance(ref, ReentrancyTracker) and ref.is_buggy:
+                r["vulnerable"] = True
+
+                for addr in ref.vulnerable_calls:
+                    for index, report in enumerate(r["spots"].copy()):
+                        if addr == report["call_address"] and ref.storage_addr not in report["storage_addresses"]:
+                            r["spots"][index]["storage_addresses"].append(ref.storage_addr)
+                            break
+                    else:
+                        report = {
+                            "call_address": addr,
+                            "storage_addresses": [ref.storage_addr],
+                        }
+                        r["spots"].append(report)
+
+        # check calls without associated storage variable
+        for rr in self.check_unchecked_call()["spots"]:
+            for ref in self.vm.reentrancy_references:
+                if rr["call_address"] in ref.checked_calls:
+                    break
+            else:
+                r["vulnerable"] = True
+                report = {
+                    "call_address": rr["call_address"],
+                    "storage_addresses": [],
+                }
+                r["spots"].append(report)
+        return r

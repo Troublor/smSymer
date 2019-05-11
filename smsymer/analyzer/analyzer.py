@@ -1,17 +1,20 @@
 import copy
 from typing import List
 
+from smsymer import Printer
 from . import TimestampDepTracker, CallResultTracker, ReentrancyTracker
 from smsymer.cfg import CFG, Block
 from smsymer.evm import Instruction
 
 
 class Analyzer:
-    def __init__(self, instructions: List[Instruction]):
+    def __init__(self, instructions: List[Instruction], printer: Printer = Printer(Printer.CONSOLE), verbose=False):
         self.instructions = instructions
+        self.printer = printer
+        self.verbose = verbose
         c_blocks, b_blocks = self._construct_blocks()
-        self.construct_cfg = CFG(c_blocks)
-        self.body_cfg = CFG(b_blocks)
+        self.construct_cfg = CFG(c_blocks, printer, verbose)
+        self.body_cfg = CFG(b_blocks, printer, verbose)
 
     def _construct_blocks(self):
         construct_blocks = []
@@ -61,50 +64,3 @@ class Analyzer:
                     ins = _remove_addr_offset(ins, is_construct, addr_offset)
                 ins_set.append(ins)
         return construct_blocks, body_blocks
-
-
-
-    @property
-    def timestamp_dependency(self) -> bool:
-        # for t in self.construct_cfg.transitions:
-        #     if "IHs" in str(t.constrain):
-        #         self.report.timestamp_dependency = True
-        # for t in self.body_cfg.transitions:
-        #     if "IHs" in str(t.constrain):
-        #         self.report.timestamp_dependency = True
-        # return self.report.timestamp_dependency
-        for ref in self.body_cfg.buggy_refs.values():
-            if isinstance(ref, TimestampDepTracker) and ref.is_buggy:
-                return True
-        return False
-
-    @property
-    def unchecked_call(self) -> bool:
-        for ref in self.body_cfg.buggy_refs.values():
-            if isinstance(ref, CallResultTracker) and ref.is_buggy:
-                return True
-        return False
-
-    @property
-    def reentrancy(self) -> bool:
-        def print_blocks_with_call(block_seq: List[Block], exe_path: List[int], path_condition: List, entry_state):
-            for block in block_seq:
-                if block.contains_call():
-                    break
-            else:
-                return
-            print("----------------")
-            print(exe_path)
-            print(path_condition)
-            print("=>")
-            print(block_seq)
-            print("----------------")
-
-            # check reentrancy bug
-            # identify storage variables that are used in path conditions
-
-        # self.body_cfg.df_traverse_cfg(print_blocks_with_call, 0, [0], [], AnalysisVM.init_state())
-        for ref in self.body_cfg.buggy_refs.values():
-            if isinstance(ref, ReentrancyTracker) and ref.is_buggy:
-                return True
-        return False

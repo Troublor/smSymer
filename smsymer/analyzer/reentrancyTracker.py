@@ -21,6 +21,7 @@ class ReentrancyTracker(RefTracker):
 
         self.buggy = False
 
+        self.checked_calls = []
         self.vulnerable_calls = []
 
     def __eq__(self, other):
@@ -46,6 +47,7 @@ class ReentrancyTracker(RefTracker):
             if self.used is True:
                 self.after_used_in_condition = True
         elif instruction.opcode in ["CALL", "STATICCALL", "DELEGATECALL", "CALLCODE"]:
+            self.checked_calls.append(instruction.addr)
             # check the gas forwarded
             self.pop(instruction.input_amount, len(stack))
             self.new(len(stack) - instruction.input_amount)

@@ -1,8 +1,8 @@
 import argparse
 import sys
 
-import smsymer.analyze as analyze
-import smsymer.disasm as disasm
+import disasm
+import analyze
 
 parser = argparse.ArgumentParser(description="SmSymer Smart Contract Analyzer")
 parser.add_argument("-v", "-version", help="show the version of SmSymer", action="store_true")
@@ -80,7 +80,7 @@ try:
     elif args.command == "analyze":
         analyze.process(args)
     else:
-        print(args.help)
+        parser.print_help()
 except AttributeError:
     sys.stderr.write("error: invalid command '{}'\n".format(' '.join(sys.argv)))
     parser.print_help()

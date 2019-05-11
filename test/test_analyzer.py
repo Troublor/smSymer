@@ -11,7 +11,7 @@ def test_timestamp_dependency0():
     bytecodes = utils.compile_sol(file)
     instructions = disasm(bytecodes)
     symer = Analyzer(instructions)
-    assert symer.timestamp_dependency
+    assert symer.body_cfg.check_timestamp_dependency()["vulnerable"]
 
 
 def test_timestamp_dependency1():
@@ -20,7 +20,7 @@ def test_timestamp_dependency1():
     bytecodes = utils.compile_sol(file)
     instructions = disasm(bytecodes)
     symer = Analyzer(instructions)
-    assert not symer.timestamp_dependency
+    assert not symer.body_cfg.check_timestamp_dependency()["vulnerable"]
 
 
 def test_unchecked_call0():
@@ -29,7 +29,7 @@ def test_unchecked_call0():
     bytecodes = utils.compile_sol(file)
     instructions = disasm(bytecodes)
     symer = Analyzer(instructions)
-    assert symer.unchecked_call
+    assert symer.body_cfg.check_unchecked_call()["vulnerable"]
 
 
 def test_unchecked_call1():
@@ -38,7 +38,7 @@ def test_unchecked_call1():
     bytecodes = utils.compile_sol(file)
     instructions = disasm(bytecodes)
     symer = Analyzer(instructions)
-    assert not symer.unchecked_call
+    assert not symer.body_cfg.check_unchecked_call()["vulnerable"]
 
 
 def test_unchecked_call2():
@@ -47,7 +47,7 @@ def test_unchecked_call2():
     bytecodes = utils.compile_sol(file)
     instructions = disasm(bytecodes)
     symer = Analyzer(instructions)
-    assert symer.unchecked_call
+    assert symer.body_cfg.check_unchecked_call()["vulnerable"]
 
 
 def test_reentrancy0():
@@ -56,7 +56,7 @@ def test_reentrancy0():
     bytecodes = utils.compile_sol(file)
     instructions = disasm(bytecodes)
     symer = Analyzer(instructions)
-    assert not symer.reentrancy
+    assert not symer.body_cfg.check_reentrancy()["vulnerable"]
 
 
 def test_reentrancy1():
@@ -65,7 +65,7 @@ def test_reentrancy1():
     bytecodes = utils.compile_sol(file)
     instructions = disasm(bytecodes)
     symer = Analyzer(instructions)
-    assert not symer.reentrancy
+    assert not symer.body_cfg.check_reentrancy()["vulnerable"]
 
 
 def test_reentrancy2():
@@ -74,7 +74,7 @@ def test_reentrancy2():
     bytecodes = utils.compile_sol(file)
     instructions = disasm(bytecodes)
     symer = Analyzer(instructions)
-    assert symer.reentrancy
+    assert symer.body_cfg.check_reentrancy()["vulnerable"]
 
 
 def test_reentrancy3():
@@ -84,4 +84,4 @@ def test_reentrancy3():
     instructions = disasm(bytecodes)
     symer = Analyzer(instructions)
 
-    assert symer.reentrancy
+    assert symer.body_cfg.check_reentrancy()["vulnerable"]
