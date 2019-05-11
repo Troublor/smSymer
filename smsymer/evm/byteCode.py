@@ -41,7 +41,7 @@ class ByteCode(object):
         return int(s, 16)
 
     @classmethod
-    def disasm(cls, bytecode: str, c_printer: Union[None, Printer] = None) -> List[Instruction]:
+    def disasm(cls, bytecode: str, printer: Union[None, Printer] = None) -> List[Instruction]:
         if len(bytecode) % 2 != 0:
             raise AttributeError("Invalid byte code")
         if bytecode.startswith("0x"):
@@ -62,7 +62,10 @@ class ByteCode(object):
                 next_byte = cls._next_byte()
                 if next_byte is None:
                     # raise InsufficientInputException(byte, ii + 1, n_param)
-                    c_printer.warn("incomplete push instruction at {0}".format(address))
+                    if printer is None:
+                        print("[WARN] incomplete push instruction at {0}".format(address))
+                    else:
+                        printer.warn("incomplete push instruction at {0}".format(address))
                     return instructions
                 inputs.append(hex(next_byte)[2:])
             instructions.append(Instruction(address, byte, get_operation_name(byte), inputs))
