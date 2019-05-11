@@ -3,7 +3,7 @@ from typing import List
 
 from z3 import BoolRef, Solver, Z3_L_TRUE, Z3_L_FALSE, is_expr
 
-from smsymer.disassemble import Instruction
+from local_test.disassemble import Instruction
 
 
 def is_symbol(var):
