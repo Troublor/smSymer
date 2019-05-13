@@ -32,3 +32,6 @@ class Stack(object):
         item = self.pop()
         self.dup(index)
         self._stack[-index - 1] = item
+
+    def get_stack(self) -> list:
+        return self._stack

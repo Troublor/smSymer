@@ -39,3 +39,6 @@ class HashMemory(object):
             if tmp.conflicts_with(item):
                 del self._memory[addr]
         self._memory[start] = tmp
+
+    def get_memory(self):
+        return self._memory

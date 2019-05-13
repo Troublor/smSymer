@@ -35,6 +35,15 @@ class EVM(object):
         # PC counter
         self._pc = 0
 
+    def get_storage(self):
+        return self._storage.get_storage()
+
+    def get_memory(self):
+        return self._memory.get_memory()
+
+    def get_stack(self):
+        return self._stack.get_stack()
+
     def exe(self, instruction: Instruction) -> PcPointer:
         next_addr = None
 
