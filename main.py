@@ -1,6 +1,7 @@
 import argparse
 import sys
 
+import debug
 import disasm
 import analyze
 
@@ -17,7 +18,7 @@ disasm_group1.add_argument("-f", "--file", help="disassemble the specified solid
                            action="store_true")
 disasm_group1.add_argument("-d", "--dir", help="disassemble all files in directory DIR", action="store_true")
 disasm_group1.add_argument("-l", "--inline", help="(default) disassemble source code specified in argument INLINE",
-                           action="store_true")
+                           action="store_true", default=True)
 
 disasm_group3 = disasm_parser.add_argument_group("type of source")
 disasm_group4 = disasm_group3.add_mutually_exclusive_group()
@@ -47,7 +48,7 @@ analyze_group1.add_argument("-f", "--file", help="analyze the specified solidity
                             action="store_true")
 analyze_group1.add_argument("-d", "--dir", help="analyze all files in directory DIR", action="store_true")
 analyze_group1.add_argument("-l", "--inline", help="(default) analyze source code specified in argument INLINE",
-                            action="store_true")
+                            action="store_true", default=True)
 
 analyze_group2 = analyze_parser.add_argument_group("type of source")
 analyze_group3 = analyze_group2.add_mutually_exclusive_group()
@@ -71,6 +72,18 @@ analyze_parser.add_argument("-e", "--extension",
                                  "(by default, 'sol' for source code file and 'hex' for bytecode file)",
                             default=None)
 
+# debug command
+debug_parser = sub_parser.add_parser("debug", help="debug EVM bytecode")
+
+debug_group0 = debug_parser.add_argument_group("specify the source of bytecode to debug")
+debug_group1 = debug_group0.add_mutually_exclusive_group()
+debug_group1.add_argument("-f", "--file", help="debug the specified bytecode file FILE",
+                          action="store_true")
+debug_group1.add_argument("-l", "--inline", help="(default) debug bytecode specified in argument INLINE",
+                          action="store_true", default=True)
+
+debug_parser.add_argument("input", help="bytecode to debug")
+
 args = parser.parse_args()
 
 # process disasm sub-command
@@ -79,6 +92,8 @@ try:
         disasm.process(args)
     elif args.command == "analyze":
         analyze.process(args)
+    elif args.command == "debug":
+        debug.process(args)
     else:
         parser.print_help()
 except AttributeError:
