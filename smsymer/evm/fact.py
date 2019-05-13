@@ -1,7 +1,7 @@
 # length of word
 from typing import Union
 
-l_word = 4
+l_word = 32
 
 # schema: [opcode, ins, outs, gas, params]
 opcodes = {
