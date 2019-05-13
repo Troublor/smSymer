@@ -1,5 +1,5 @@
 z3
-pycryptodome==3.8.0
-z3-solver==4.8.0.0.post1
+pycryptodome
+z3-solver
 argparse
 
