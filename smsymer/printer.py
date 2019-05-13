@@ -15,7 +15,7 @@ class Printer(object):
             if directory != '' and not os.path.exists(directory):
                 os.mkdir(directory)
 
-    def print(self, msg: Union[List[str], str]):
+    def print(self, msg: Union[List[str], str] = ""):
         if self.type == Printer.FILE:
             with open(self.filename, 'a') as file:
                 if type(msg) is list:
