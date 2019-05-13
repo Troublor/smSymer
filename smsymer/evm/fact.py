@@ -86,6 +86,7 @@ opcodes = {
     # 0xe1: ['SLOADBYTES', 3, 0, 50, 0],
     # 0xe2: ['SSTOREBYTES', 3, 0, 0, 0],
     # 0xe3: ['SSIZE', 1, 1, 50, 0],
+    0xbb: ['BREAKPOINT', 0, 0, 0, 0],
 
     # closures
     0xf0: ['CREATE', 3, 1, 32000, 0],
