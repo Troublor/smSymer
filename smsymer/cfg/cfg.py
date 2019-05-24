@@ -2,10 +2,11 @@ import copy
 from functools import reduce
 from typing import List, Dict
 
-from z3 import Not
+from z3 import Not, simplify
 
-from smsymer import Printer
+from smsymer import Printer, utils
 from smsymer.analyzer import AnalysisVM, TimestampDepTracker, CallResultTracker, ReentrancyTracker
+from smsymer.analyzer.exception import AnalyzerException
 from smsymer.analyzer.tool import RefTracker
 from smsymer.evm import PcPointer
 from .block import Block
@@ -20,12 +21,13 @@ class CFG(object):
     def __init__(self, blocks: List[Block], printer: Printer, verbose=False):
         self.printer = printer
         self.verbose = verbose
-
         self.blocks = blocks
 
         self.transitions: List[Transition] = []
         self._construct_state = []
         self.vm = AnalysisVM()
+        if verbose:
+            printer.info("Initialized Analysis Virtual Machine")
         self.buggy_refs: Dict[int, RefTracker] = {}
 
         # the world and machine state when branch start. key is the last_address of branch block
@@ -34,8 +36,16 @@ class CFG(object):
         self.block_dict: Dict[int: Block] = {}
         for block in self.blocks:
             self.block_dict[block.address] = block
-
+        if verbose:
+            printer.info("Start symbolic execution")
         self._build_transitions()
+        if verbose:
+            printer.info("Symbolic execution completed")
+            n = 0
+            for transition in self.transitions:
+                if transition.constrain is True or transition.constrain is False:
+                    n += 1
+            printer.info("Number of actual conditional jump: {0}".format(n))
 
         # auxiliary variable for _df_traverse_cfg
         # including loop, every block can only be visited twice
@@ -99,6 +109,8 @@ class CFG(object):
         return r
 
     def _get_block_index(self, addr: int) -> int:
+        if utils.is_symbol(addr):
+            raise AnalyzerException("Do not support symbolic JUMP destination")
         for index, block in enumerate(self.blocks):
             if block.address == addr:
                 return index
@@ -119,11 +131,16 @@ class CFG(object):
 
         def _traverse_block_recursively(pc_b):
             nonlocal recursion_depth
-            block = self.blocks[pc_b]
+            try:
+                block = self.blocks[pc_b]
+            except IndexError as e:
+                print(e)
             # print("Traverse block {0}".format(block))
             pc_i = 0
             while True:
                 ins = block[pc_i]
+                if ins.opcode is None:
+                    print(ins)
                 pc_pointer = self.vm.exe(ins)
                 if pc_pointer.status == PcPointer.NEXT_ADDR:
                     if pc_i == len(block) - 1:
@@ -145,6 +162,8 @@ class CFG(object):
                     pc_bb = self._get_block_index(pc_pointer.addr)
                     # if pc_bb is None:
                     #     print(False)
+                    if pc_bb is None:
+                        print()
                     is_loop = self._add_transition(last_block, self.blocks[pc_bb])
                     if not is_loop:
                         _traverse_block_recursively(pc_bb)

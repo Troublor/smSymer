@@ -2,12 +2,14 @@ import os
 import sys
 from typing import List
 
-from smsymer import Printer, utils
+from cprinter import CPrinter
+from fprinter import FPrinter
+from smsymer import utils
 from smsymer.evm import ByteCode
 
 
 def process(args):
-    c_printer = Printer(type=Printer.CONSOLE)
+    c_printer = CPrinter()
     if args.result is not None:
         if not os.path.exists(args.result):
             c_printer.error("Result output directory '{0}' does not exist".format(args.result))
@@ -37,12 +39,12 @@ def process(args):
                     c_printer.info("start disassembling {0}".format(s))
                     try:
                         if args.source:
-                            bytecode = utils.compile_sol(s)
+                            bytecode = utils.compile_sol(s)[0]
                         else:
                             bytecode = ''.join(file.readlines())
                         if args.result is not None:
                             filename = os.path.splitext(s)[0] + ".asm"
-                            f_printer = Printer(type=Printer.FILE, filename=os.path.join(args.result, filename))
+                            f_printer = FPrinter(filename=os.path.join(args.result, filename))
                             f_printer.print(disasm(bytecode))
                         else:
                             c_printer.print(disasm(bytecode))
@@ -51,22 +53,6 @@ def process(args):
                         c_printer.info("fail to disassemble {0}".format(s))
                     else:
                         c_printer.info("finish disassembling {0}".format(s))
-    elif args.inline:
-        for i, s in enumerate(args.input):
-            bytecode = s
-            c_printer.info("start disassembling {0}".format(s))
-            try:
-                if args.result is not None:
-                    filename = str(i) + ".asm"
-                    f_printer = Printer(type=Printer.FILE, filename=os.path.join(args.result, filename))
-                    f_printer.print(disasm(bytecode))
-                else:
-                    c_printer.print(disasm(bytecode))
-            except AttributeError as e:
-                c_printer.error(str(e))
-                c_printer.info("fail to disassemble {0}".format(s))
-            else:
-                c_printer.info("finish disassembling {0}".format(s))
     elif args.dir:
         if args.source and args.extension is None:
             args.extension = 'sol'
@@ -82,10 +68,27 @@ def process(args):
                 c_printer.warn("skipping '{0}'")
             else:
                 process_dir(s, args)
+    else:
+        for i, s in enumerate(args.input):
+            bytecode = s
+            c_printer.info("start disassembling {0}".format(s))
+            try:
+                if args.result is not None:
+                    filename = str(i) + ".asm"
+                    f_printer = FPrinter(filename=os.path.join(args.result, filename))
+                    f_printer.print(disasm(bytecode))
+                else:
+                    c_printer.print(disasm(bytecode))
+            except AttributeError as e:
+                c_printer.error(str(e))
+                c_printer.info("fail to disassemble {0}".format(s))
+            else:
+                c_printer.info("finish disassembling {0}".format(s))
+
 
 
 def process_dir(directory: str, args):
-    c_printer = Printer(Printer.CONSOLE)
+    c_printer = CPrinter()
     for item in os.listdir(directory):
         if os.path.isdir(item):
             if args.recursively:
@@ -101,12 +104,12 @@ def process_dir(directory: str, args):
                 c_printer.info("start disassembling {0}".format(os.path.join(directory, item)))
                 try:
                     if args.source:
-                        bytecode = utils.compile_sol(os.path.join(directory, item))
+                        bytecode = utils.compile_sol(os.path.join(directory, item))[0]
                     else:
                         bytecode = ''.join(file.readlines())
                     if args.result is not None:
                         filename = os.path.join(args.result, os.path.split(directory)[0], item + ".asm")
-                        f_printer = Printer(Printer.FILE, filename=filename)
+                        f_printer = FPrinter(filename=filename)
                         f_printer.print(disasm(bytecode))
                     else:
                         c_printer.print(disasm(bytecode))
@@ -118,6 +121,6 @@ def process_dir(directory: str, args):
 
 
 def disasm(bytecode: str) -> List[str]:
-    c_printer = Printer(Printer.CONSOLE)
+    c_printer = CPrinter()
     instructions = ByteCode.disasm(bytecode, c_printer)
     return list(map(lambda ins: str(ins), instructions))

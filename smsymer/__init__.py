@@ -1,2 +1,2 @@
-from .printer import Printer
+from .printer import Printer, DPrinter
 from .debugger import Debugger

@@ -26,6 +26,8 @@ class ByteCode(object):
         """
         if cls._index >= len(cls._bytecode):
             return None
+        if cls._index + 2 > len(cls._bytecode):
+            return None
         next_str = cls._bytecode[cls._index:cls._index + 2]
         cls._index += 2
         return cls._str2byte(next_str)
@@ -42,8 +44,6 @@ class ByteCode(object):
 
     @classmethod
     def disasm(cls, bytecode: str, printer: Union[None, Printer] = None) -> List[Instruction]:
-        if len(bytecode) % 2 != 0:
-            raise AttributeError("Invalid byte code")
         if bytecode.startswith("0x"):
             bytecode = bytecode[2:]
         cls._bytecode = bytecode

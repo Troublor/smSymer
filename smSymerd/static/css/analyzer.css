@@ -1,0 +1,29 @@
+.vulnerability{
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 10px 0;
+}
+
+.vulnerability hr{
+    margin-top: 8px;
+}
+
+.analyzer-output{
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+}
+
+.output-window{
+    overflow: auto;
+    height: 500px;
+}
+
+.vul-info {
+
+}
+
+.vul-type {
+    font-weight: bold;
+}

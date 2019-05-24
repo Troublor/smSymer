@@ -16,20 +16,13 @@ def test_correct_code1():
 
 def test_wrong_code():
     bytecode = "606060405260968060106000396000f"
-    try:
-        disasm(bytecode)
-        assert False
-    except AttributeError as e:
-        assert str(e) == "Invalid byte code"
+    dis = disasm(bytecode)
+    assert len(dis) == 9
 
 
 def test_wrong_code1():
     bytecode = "606060405260968060106000396200"
-    try:
-        disasm(bytecode)
-        assert False
-    except InsufficientInputException:
-        assert True
+    disasm(bytecode)
 
 
 def test_wrong_code2():

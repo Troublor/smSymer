@@ -1,20 +1,34 @@
 import copy
 from typing import List
 
-from smsymer import Printer
-from . import TimestampDepTracker, CallResultTracker, ReentrancyTracker
+from smsymer import Printer, DPrinter
 from smsymer.cfg import CFG, Block
 from smsymer.evm import Instruction
 
 
 class Analyzer:
-    def __init__(self, instructions: List[Instruction], printer: Printer = Printer(Printer.CONSOLE), verbose=False):
+    def __init__(self, instructions: List[Instruction], printer: Printer = DPrinter(), verbose=False, deployment=True):
+        self.deployment = deployment
         self.instructions = instructions
         self.printer = printer
         self.verbose = verbose
+        if verbose:
+            printer.info("Start dividing basic blocks")
         c_blocks, b_blocks = self._construct_blocks()
-        self.construct_cfg = CFG(c_blocks, printer, verbose)
+        if verbose:
+            printer.info("Block division completed")
+            printer.info("Total basic block number: {0}".format(len(c_blocks) + len(b_blocks)))
+        if self.deployment:
+            if verbose:
+                printer.info("Start constructing CFG in deployment code")
+            self.construct_cfg = CFG(c_blocks, printer, verbose)
+            if verbose:
+                printer.info("Constructing CFG in deployment code completed")
+        if verbose:
+            printer.info("Start constructing CFG in runtime code")
         self.body_cfg = CFG(b_blocks, printer, verbose)
+        if verbose:
+            printer.info("Constructing CFG in runtime code completed")
 
     def _construct_blocks(self):
         construct_blocks = []
@@ -32,7 +46,7 @@ class Analyzer:
                 i.addr -= offset
             return i
 
-        is_construct = True
+        is_construct = self.deployment
         addr_offset = 0
         ins_set: List[Instruction] = []
         for ins in self.instructions:
@@ -60,6 +74,8 @@ class Analyzer:
             else:
                 if len(ins_set) == 0 and len(body_blocks) == 0 and not is_construct:
                     # this is the first instruction in body
+                    if ins.opcode == "INVALID":
+                        continue
                     addr_offset = ins.addr
                     ins = _remove_addr_offset(ins, is_construct, addr_offset)
                 ins_set.append(ins)

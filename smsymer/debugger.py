@@ -1,15 +1,15 @@
 from typing import List, Union, Tuple
 
-from smsymer import Printer, utils
+from smsymer import utils, Printer, DPrinter
 from smsymer.evm import Instruction, EVM
 
 
 class Debugger(object):
-    def __init__(self, instructions: List[Instruction]):
+    def __init__(self, instructions: List[Instruction], printer: Printer = DPrinter()):
         self.instructions = instructions
         self._evm = EVM()
         self._pc = 0
-        self._c_printer = Printer(Printer.CONSOLE)
+        self._c_printer = printer
 
     def help(self):
         self._c_printer.print("Debugger Usage:")

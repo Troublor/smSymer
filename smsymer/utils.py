@@ -1,8 +1,12 @@
+import os
 import subprocess
+import sys
 from typing import List
 
 from z3 import BoolRef, Solver, Z3_L_TRUE, Z3_L_FALSE, is_expr
 
+from conf import ROOT_DIR
+from smsymer import Printer, DPrinter
 from smsymer.evm import Instruction
 
 
@@ -10,18 +14,29 @@ def is_symbol(var):
     return is_expr(var)
 
 
-def compile_sol(sol_filename):
-    cmd = "solc --bin {0}".format(sol_filename)
+def compile_sol(sol_filename, runtime=False) -> List[str]:
+    solc_path = os.path.join(ROOT_DIR, 'tools', "solc.exe")
+    if runtime:
+        cmd = solc_path + " --bin-runtime {0}".format(sol_filename)
+    else:
+        cmd = solc_path + " --bin {0}".format(sol_filename)
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     is_bin = False
     lines = p.stdout.readlines()
+    results = []
     for line in lines:
         if is_bin:
-            return str(line, encoding='utf-8').strip('\n')
+            bytecode = str(line, encoding='utf-8').strip()
+            if len(bytecode) > 0:
+                results.append(bytecode)
+            is_bin = False
         if "Binary" in str(line):
             is_bin = True
-    print("\n".join(map(lambda l: str(l, encoding='utf-8'), lines)))
-    raise AttributeError("Compile error")
+    if len(results) > 0:
+        return results
+    else:
+        print("\n".join(map(lambda l: str(l, encoding='utf-8'), lines)))
+        raise AttributeError("Compile error")
 
 
 def is_stack_safe(instructions: List[Instruction]):

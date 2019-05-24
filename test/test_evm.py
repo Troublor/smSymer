@@ -5,10 +5,14 @@ from smsymer.evm.fact import opcodes
 def test_stack():
     evm = EVM()
     for byte, code in opcodes.items():
+        if byte == 0xbb:
+            continue
+        if code[0] == "DELEGATECALL":
+            print(byte)
         evm.reset()
         for i in range(code[1]):
             evm.PUSH('01')
-        instruction = Instruction(opcode=code[0], params="01"*code[4])
+        instruction = Instruction(opcode=code[0], params="01" * code[4])
         if instruction.opcode.startswith("PUSH"):
             instruction.params = "00" * (byte - 0x5f)
             opr = getattr(evm, "PUSH")

@@ -1,12 +1,13 @@
 import os
 import sys
 
-from smsymer import Printer, Debugger
+from cprinter import CPrinter
+from smsymer import Debugger
 from smsymer.evm import ByteCode
 
 
 def process(args):
-    c_printer = Printer(type=Printer.CONSOLE)
+    c_printer = CPrinter()
     if args.file:
         s = args.input
         if not os.path.exists(s):
@@ -19,19 +20,19 @@ def process(args):
                 try:
                     bytecode = ''.join(file.readlines())
                     instructions = ByteCode.disasm(bytecode, c_printer)
-                    debugger = Debugger(instructions)
+                    debugger = Debugger(instructions, c_printer)
                     debugger.start()
                 except AttributeError as e:
                     c_printer.error(str(e))
                     c_printer.info("fail to debug {0}".format(s))
                 else:
                     c_printer.info("finish debugging {0}".format(s))
-    elif args.inline:
+    else:
         bytecode = args.input
         c_printer.info("start debugging")
         try:
             instructions = ByteCode.disasm(bytecode, c_printer)
-            debugger = Debugger(instructions)
+            debugger = Debugger(instructions, c_printer)
             debugger.start()
         except AttributeError as e:
             c_printer.error(str(e))

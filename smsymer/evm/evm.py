@@ -1,7 +1,7 @@
 import copy
 
 from Crypto.Hash import keccak
-from z3 import BoolRef, Not, Int
+from z3 import BoolRef, Not, Int, Z3Exception, is_to_int, IntSort
 
 from smsymer import utils
 from .word import Word
@@ -142,7 +142,7 @@ class EVM(object):
         if type(op) is Word:
             op = int(op)
         if op is None:
-            print(False)
+            raise EvmExecutionException("Try to pop item when stack is empty")
         if type(op) is float:
             op = int(op)
         return op
@@ -177,7 +177,10 @@ class EVM(object):
     def SDIV(self):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
-        self._stack_push(op0 // op1)
+        if not utils.is_symbol(op0) and not utils.is_symbol(op1):
+            self._stack_push(op0 // op1)
+        else:
+            self._stack_push(Int("(" + str(op0) + "//" + str(op1) + ")"))
 
     def MOD(self):
         op0 = self._stack_pop()
@@ -198,20 +201,20 @@ class EVM(object):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
         op2 = self._stack_pop()
-        if int(op2) == 0:
+        if op2 == 0:
             self._stack_push(Word(0))
         else:
-            self._stack_push(Word((int(op0) + int(op1)) % int(op2)))
+            self._stack_push((op0 + op1) % op2)
 
     def MULMOD(self):
         # All intermediate calculations of this operation are not subject to the 2^256 modulo
         op0 = self._stack_pop()
         op1 = self._stack_pop()
         op2 = self._stack_pop()
-        if int(op2) == 0:
+        if op2 == 0:
             self._stack_push(Word(0))
         else:
-            self._stack_push(Word((int(op0) * int(op1)) % int(op2)))
+            self._stack_push((op0 * op1) % op2)
 
     def EXP(self):
         op0 = self._stack_pop()
@@ -221,7 +224,7 @@ class EVM(object):
     def SIGNEXTEND(self):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
-        t = l_word * 8 - 8 * (int(op0) + 1)
+        t = l_word * 8 - 8 * (op0 + 1)
         if utils.is_symbol(op1):
             # raise EvmExecutionException("SIGNEXTEND does not support symbolic execution")
             self._stack_push(Int("signextend_{0}".format(self._pc)))
@@ -231,12 +234,12 @@ class EVM(object):
     def LT(self):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
-        self._stack_push(op0 < op1)
+        self._stack_push(IntSort().cast(op0 < op1))
 
     def GT(self):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
-        self._stack_push(op0 > op1)
+        self._stack_push(IntSort().cast(op0 > op1))
 
     def SLT(self):
         op0 = self._stack_pop()
@@ -259,7 +262,10 @@ class EVM(object):
     def EQ(self):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
-        self._stack_push(op0 == op1)
+        try:
+            self._stack_push(IntSort().cast(op0 == op1))
+        except Z3Exception as e:
+            print(e)
 
     def ISZERO(self):
         op0 = self._stack_pop()
@@ -269,9 +275,9 @@ class EVM(object):
             else:
                 self._stack_push(Word(0))
         elif type(op0) is BoolRef:
-            self._stack_push(Not(op0))
+            self._stack_push(IntSort().cast(Not(op0)))
         else:
-            self._stack_push(op0 == 0)
+            self._stack_push(IntSort().cast(op0 == 0))
 
     def AND(self):
         op0 = self._stack_pop()
@@ -326,7 +332,7 @@ class EVM(object):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
         # m_slice = self._memory[int(op0):int(op0) + int(op1)]
-        value = self._memory.load(int(op0), int(op1))
+        value = self._memory.load(op0, op1)
         if utils.is_symbol(value):
             self._stack_push(Int("SHA3_{0}".format(self._pc)))
             return
@@ -501,13 +507,14 @@ class EVM(object):
                 return PcPointer(PcPointer.NEXT_ADDR)
         else:
             # 跳转地址不确定
-            if utils.cond_always_true(op1):
+            cond = op1 != 0
+            if utils.cond_always_true(cond):
                 # constrain always true
                 return PcPointer(PcPointer.JUMP, addr=op0)
-            elif utils.cond_always_false(op1):
+            elif utils.cond_always_false(cond):
                 return PcPointer(PcPointer.NEXT_ADDR)
             else:
-                return PcPointer(PcPointer.JUMPI, addr=op0, cond=op1)
+                return PcPointer(PcPointer.JUMPI, addr=op0, cond=cond)
 
     def PC(self):
         self._stack_push(Word(self._pc))
@@ -587,7 +594,6 @@ class EVM(object):
         op3 = self._stack_pop()
         op4 = self._stack_pop()
         op5 = self._stack_pop()
-        op6 = self._stack_pop()
         self._stack_push(Int("delegatecall_{0}".format(self._pc)))
 
     def REVERT(self):

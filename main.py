@@ -23,7 +23,7 @@ disasm_group1.add_argument("-l", "--inline", help="(default) disassemble source 
 disasm_group3 = disasm_parser.add_argument_group("type of source")
 disasm_group4 = disasm_group3.add_mutually_exclusive_group()
 disasm_group4.add_argument("-s", "--source", help="solidity source code", action="store_true")
-disasm_group4.add_argument("-b", "--bytecode", help="(default) EVM bytecode", action="store_true", default=True)
+disasm_group4.add_argument("-b", "--bytecode", help="(default) EVM bytecode", action="store_true")
 
 disasm_group2 = disasm_parser.add_argument_group("specify where to output disassemble result")
 disasm_group2.add_argument("-r", "--result", metavar="RESULT_DIR",
@@ -48,7 +48,7 @@ analyze_group1.add_argument("-f", "--file", help="analyze the specified solidity
                             action="store_true")
 analyze_group1.add_argument("-d", "--dir", help="analyze all files in directory DIR", action="store_true")
 analyze_group1.add_argument("-l", "--inline", help="(default) analyze source code specified in argument INLINE",
-                            action="store_true", default=True)
+                            action="store_true")
 
 analyze_group2 = analyze_parser.add_argument_group("type of source")
 analyze_group3 = analyze_group2.add_mutually_exclusive_group()
@@ -80,7 +80,7 @@ debug_group1 = debug_group0.add_mutually_exclusive_group()
 debug_group1.add_argument("-f", "--file", help="debug the specified bytecode file FILE",
                           action="store_true")
 debug_group1.add_argument("-l", "--inline", help="(default) debug bytecode specified in argument INLINE",
-                          action="store_true", default=True)
+                          action="store_true")
 
 debug_parser.add_argument("input", help="bytecode to debug")
 

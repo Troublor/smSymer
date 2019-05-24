@@ -139,3 +139,10 @@ def get_param_amount(byte: int) -> Union[int, None]:
     if byte not in opcodes:
         return None
     return opcodes[byte][4]
+
+
+def get_bytecode(op: str) -> Union[int, None]:
+    for bytecode, opcode in opcodes.items():
+        if opcode == op:
+            return bytecode
+    return None

@@ -86,11 +86,16 @@ class AnalysisVM(EVM):
         if instruction.opcode == "SSTORE":
             # check if any referred storage variable is changed after SSTORE
             for ref, value in bak.items():
-                if utils.is_symbol(value) and not eq(simplify(value), simplify(self._storage[ref.storage_addr])) or \
-                        not utils.is_symbol(value) and value != self._storage[ref.storage_addr]:
-                    ref.storage_changed = True
-                    if ref.after_used_in_condition:
-                        ref.changed_after_condition = True
-                    if not ref.after_call:
-                        ref.changed_before_call = True
+                try:
+                    if utils.is_symbol(value) is not utils.is_symbol(self._storage[ref.storage_addr]) or \
+                            utils.is_symbol(value) and not eq(simplify(value),
+                                                              simplify(self._storage[ref.storage_addr])) or \
+                            not utils.is_symbol(value) and value != self._storage[ref.storage_addr]:
+                        ref.storage_changed = True
+                        if ref.after_used_in_condition:
+                            ref.changed_after_condition = True
+                        if not ref.after_call:
+                            ref.changed_before_call = True
+                except Z3Exception as e:
+                    print(e)
         return pc_pointer
