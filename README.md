@@ -186,7 +186,7 @@ Exit Debugger
 
 SmSymerd is a module of SmSymer Project, which offers users a solution to deploying SmSymer remotely on a server. SmSymerd Web Service provides all functionalities of SmSymer Analyzer in GUI. 
 
-To deploy SmSymerd Web Service, you need to run `smsymerd/httpserver.py` and `smsymerd/wsserver-compile.py` in two seperate process. Then, SmSymerd service will be available on port `5000`. 
+To deploy SmSymerd Web Service, you need to run `smsymerd/httpserver.py` and `smsymerd/wsserver-compile.py` in two seperate processes. Then, SmSymerd service will be available on port `5000`. 
 
 ### Feedback
 
