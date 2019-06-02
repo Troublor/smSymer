@@ -18,6 +18,7 @@
 .output-window{
     overflow: auto;
     height: 500px;
+    background: #d3d3d366;
 }
 
 .vul-info {

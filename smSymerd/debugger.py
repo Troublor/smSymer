@@ -21,9 +21,9 @@ class Debugger(object):
         }
 
         for key, value in self._evm.get_storage().items():
-            resp["storage"].append((str(key), str(value)))
+            resp["storage"].append((hex(key), str(value)))
         for value in self._evm.get_memory().values():
-            resp["memory"].append((str(value.start), str(value.length), str(value.content)))
+            resp["memory"].append((hex(value.start), hex(value.length), str(value.content)))
         for item in reversed(self._evm.get_stack()):
             if utils.is_symbol(item):
                 resp["stack"].append(str(item))

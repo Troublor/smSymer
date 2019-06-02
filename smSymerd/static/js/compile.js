@@ -16,9 +16,9 @@ ws.onmessage = function (event) {
     switch (data["operation"]) {
         case "log":
             let log;
-            if (data["identifier"] === "analyze-log"){
+            if (data["identifier"] === "analyze-log") {
                 log = $("#analyzeLog");
-            }else {
+            } else {
                 log = $("#log");
             }
             switch (data["type"]) {
@@ -35,6 +35,9 @@ ws.onmessage = function (event) {
                     log.append("<p class='error'>" + data["data"] + "</p>");
                     break;
             }
+            $('#log').animate({
+                    scrollTop: $("#log")[0].scrollHeight
+                }, 0);
             break;
         case "return-solc":
             bytecode = data["data"]["bytecode"];
