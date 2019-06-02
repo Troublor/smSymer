@@ -1,0 +1,66 @@
+.editor-view {
+    /*border: 1px solid lightgrey;*/
+    /*border-radius: 5px;*/
+    min-height: 500px;
+    padding: 10px;
+}
+
+.editor-container {
+    height: calc(100% - 45px);
+}
+
+.editor {
+    height: 100%;
+    width: 100%;
+    border: #dee2e6 1px solid;
+    border-top: 0;
+    padding: 10px;
+    resize: none;
+}
+
+.option-container {
+    background: #FFF;
+    border-radius: 10px;
+    /*height: 100%;*/
+    padding: 20px;
+}
+
+.options {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.option {
+    width: fit-content;
+    margin-right: 30px;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-around;
+}
+
+.logArea {
+    padding: 10px;
+    width: 100%;
+    height: 100px;
+    background: #fff;
+    border-radius: 10px;
+    flex-grow: 1;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.vertical-view {
+    display: flex;
+    flex-direction: column;
+}
+
+.log{
+    flex-grow: 1;
+    overflow: auto;
+    background: #d3d3d366;
+}
+

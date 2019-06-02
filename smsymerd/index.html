@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SmSymer</title>
+    <link href="static/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="static/css/header.css" rel="stylesheet"/>
+    <link href="static/css/editor.css" rel="stylesheet"/>
+    <link href="static/css/debugger.css" rel="stylesheet"/>
+    <link href="static/css/analyzer.css" rel="stylesheet"/>
+    <script src="static/js/jquery-3.4.1.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <!-- split.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.5.9/split.min.js"></script>
+
+</head>
+<body>
+<nav class="title">
+    <div class="title-brand-section">
+        <a class="title-brand" href="#">SmSymer</a>
+    </div>
+    <div class="title-section">
+        <div class="section-active" id="editorSection">Editor</div>
+        <div class="section" id="analyzerSection">Analyzer</div>
+        <div class="section" id="debuggerSection">Debugger</div>
+    </div>
+</nav>
+<div class="container" style="display: block;" id="editorPage">
+    <div class="row mt-3">
+        <div id="leftView" class="editor-view">
+            <div>
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Source Code</a>
+                    </li>
+                    <!--                    <li class="nav-item">-->
+                    <!--                        <a class="nav-link" href="#">Link</a>-->
+                    <!--                    </li>-->
+                    <!--                    <li class="nav-item">-->
+                    <!--                        <a class="nav-link" href="#">Link</a>-->
+                    <!--                    </li>-->
+                    <!--                    <li class="nav-item">-->
+                    <!--                        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>-->
+                    <!--                    </li>-->
+                </ul>
+            </div>
+            <div class="editor-container">
+                <textarea id="editor" class="editor" spellcheck="false"></textarea>
+            </div>
+            <div class="row">
+
+            </div>
+        </div>
+        <div id="rightView" class="editor-view vertical-view">
+            <div class="option-container container">
+                <div class="row">
+                    <div class="col">
+                        <label for="version">Solidity Version: </label>
+                        <select id="version" class="form-control-sm">
+                            <option value="0.4.25">0.4.25</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="options">
+                    <div class="option">
+                        <input type="checkbox" id="optimization">
+                        <label class="form-check-label" for="optimization">Enable Optimization</label>
+                    </div>
+                    <div class="option">
+                        <input type="checkbox" id="runtime">
+                        <label class="form-check-label" for="runtime">Runtime Code</label>
+                    </div>
+
+                    <!--                    <div class="option">-->
+                    <!--                        <input type="checkbox" id="inlineCheckbox3" value="option1">-->
+                    <!--                        <label class="form-check-label" for="inlineCheckbox3">1</label>-->
+                    <!--                    </div>-->
+                </div>
+                <hr/>
+                <div class="buttons mt-3">
+                    <button type="button" class="btn btn-outline-primary" id="compileBtn">Compile</button>
+                    <button type="button" class="btn btn-outline-primary" id="analyzeBtn" disabled>Analyze</button>
+                    <button type="button" class="btn btn-outline-primary" id="debugBtn" disabled>Debug</button>
+                </div>
+
+            </div>
+            <div class="logArea mt-3">
+                <p class="font-weight-bold">Compile Log</p>
+                <div class="log" id="log">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" style="display: none;" id="debuggerPage">
+    <div class="row mt-3" id="debugger-view-container" style=" display: flex; align-items: stretch">
+        <div id="debugger-leftView" style="height: 100%;">
+            <div style="overflow: hidden;">
+                <span class="h5">Bytecode</span>
+                <button class="float-right btn btn-sm btn-outline-primary" id="disasmBtn">Disasm</button>
+            </div>
+            <textarea id="bytecode" class="bytecodeEditor"></textarea>
+
+        </div>
+        <div id="debugger-middleView" style="height: 100%;">
+            <div style="overflow: hidden;">
+                <span class="h5">Assembly</span>
+                <button class="float-right btn btn-sm btn-outline-primary" id="startDebugBtn">Debug</button>
+            </div>
+            <div class="debugger-view">
+                <div id="lineNumber" class="lineNumber">
+
+                </div>
+                <div id="assemblyView" class="assemblyView">
+
+                </div>
+            </div>
+
+        </div>
+        <div id="debugger-rightView" class="debugger-control-view" style="height: 100%;">
+            <div class="debugger-control">
+                <button type="button" class="btn btn-outline-primary" id="continueBtn" disabled>Continue Run</button>
+                <button type="button" class="btn btn-outline-primary" id="stepOverBtn" disabled>Take One Step</button>
+            </div>
+            <div class="accordion execution-status mt-4" id="accordionExample">
+                <div class="card" id="storage">
+                    <div class="card-header" id="headingOne">
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne"
+                                aria-expanded="true" aria-controls="collapseOne">
+                            Storage:
+                        </button>
+                    </div>
+                    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne"
+                         data-parent="#accordionExample">
+                        <div class="card-body">
+<!--                            <div class="item">-->
+<!--                                <span class="key1">key</span> =>-->
+<!--                                <div class="value">value</div>-->
+<!--                            </div>-->
+<!--                            <div class="item">-->
+<!--                                <span class="key1">key</span> =>-->
+<!--                                <div class="value">value</div>-->
+<!--                            </div>-->
+                        </div>
+                    </div>
+                </div>
+                <div class="card" id="memory">
+                    <div class="card-header" id="headingTwo">
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseTwo"
+                                aria-expanded="true" aria-controls="collapseOne">
+                            Memory:
+                        </button>
+                    </div>
+                    <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo"
+                         data-parent="#accordionExample">
+                        <div class="card-body">
+<!--                            <div class="item">-->
+<!--                                <span class="key1">key</span> - <span class="key2">key</span> =>-->
+<!--                                <div class="value">value</div>-->
+<!--                            </div>-->
+<!--                            <div class="item">-->
+<!--                                <span class="key1">key</span> - <span class="key2">key</span> =>-->
+<!--                                <div class="value">value</div>-->
+<!--                            </div>-->
+                        </div>
+                    </div>
+                </div>
+                <div class="card" id="stack">
+                    <div class="card-header" id="headingThree">
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseThree"
+                                aria-expanded="true" aria-controls="collapseOne">
+                            Stack:
+                        </button>
+                    </div>
+                    <div id="collapseThree" class="collapse show" aria-labelledby="headingThree"
+                         data-parent="#accordionExample">
+                        <div class="card-body">
+<!--                            <div class="item">-->
+<!--                                <div class="value">value</div>-->
+<!--                            </div>-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" style="display: none;" id="analyzerPage">
+    <h5 class="mt-3">Analysis Result</h5>
+    <div class="row">
+        <div class="col-7" id="vulnerabilities-container">
+<!--            <div class="vulnerability">-->
+<!--                <div class="vul-type">Reentrancy</div>-->
+<!--                <hr/>-->
+<!--                <div class="vul-info">-->
+<!--                    <div>Reentrancy-vulnerable Call at: <span>0x43 CALL</span></div>-->
+<!--                    <div>Possible Guard Storage Variable:</div>-->
+<!--                    <div>0x34 SLOAD</div>-->
+<!--                    <div>0x34 SLOAD</div>-->
+<!--                    <div>0x34 SLOAD</div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="vulnerability">-->
+
+<!--            </div>-->
+        </div>
+        <div class="col-5">
+            <div class="analyzer-output">
+                <h5 class="mt-2">Analysis Log</h5>
+                <div class="output-window" id="analyzeLog">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        window.Split(['#leftView', '#rightView'], {
+            minSize: [300, 300],
+            cursor: 'col-resize',
+            gutterSize: 5,
+            gutterStyle: function (dimensio, gutterSize) {
+                return {
+                    'flex-basis': gutterSize + 'px',
+                    "background": "lightgrey",
+                    "border-radius": "5px",
+                    "cursor": "col-resize",
+                }
+            },
+        });
+        let height = "calc(" + $(window).height() + "px - 100px - 1rem)";
+        $("#debugger-view-container").css("height", height);
+        $("#rightView").css("height", height);
+        // $("#rightView").css("max-height", height);
+    });
+
+    $(function () {
+        window.Split(['#debugger-leftView', '#debugger-middleView', "#debugger-rightView"], {
+            minSize: [100, 100, 100],
+            cursor: 'col-resize',
+        });
+        // let height = "calc(" + $(window).height() + "px - 150px - 1rem)";
+        // $("#debugger-middleView").css("height", height);
+        // $("#debugger-middleView").css("min-height", height);
+        // $("#debugger-middleView").css("max-height", height);
+    });
+
+    let editorSection = $("#editorSection");
+    let analyzerSection = $("#analyzerSection");
+    let debuggerSection = $("#debuggerSection");
+    let editorPage = $("#editorPage");
+    let analyzerPage = $("#analyzerPage");
+    let debuggerPage = $("#debuggerPage");
+
+    editorSection.click(function () {
+        if (editorSection.hasClass("section-active")) {
+            return
+        }
+        editorSection.addClass("section-active");
+        analyzerSection.removeClass("section-active").addClass("section");
+        debuggerSection.removeClass("section-active").addClass("section");
+        editorPage.css("display", "block");
+        analyzerPage.css("display", "none");
+        debuggerPage.css("display", "none");
+    });
+    analyzerSection.click(function () {
+        if (analyzerSection.hasClass("section-active")) {
+            return
+        }
+        analyzerSection.addClass("section-active");
+        editorSection.removeClass("section-active").addClass("section");
+        debuggerSection.removeClass("section-active").addClass("section");
+        analyzerPage.css("display", "block");
+        editorPage.css("display", "none");
+        debuggerPage.css("display", "none");
+    });
+    debuggerSection.click(function () {
+        if (debuggerSection.hasClass("section-active")) {
+            return
+        }
+        debuggerSection.addClass("section-active");
+        analyzerSection.removeClass("section-active").addClass("section");
+        editorSection.removeClass("section-active").addClass("section");
+        debuggerPage.css("display", "block");
+        analyzerPage.css("display", "none");
+        editorPage.css("display", "none");
+    });
+
+
+    // let ws = new WebSocket("ws://localhost:1111");
+    // let i = 0;
+    // ws.onmessage = function (event) {
+    //     console.log(event.data);
+    //     ws.send(String(i++));
+    // }
+    // ws.onopen = function () {
+    //     ws.send(String(i++));
+    // }
+    // ws.onclose = function () {
+    //     console.log("closed")
+    // }
+</script>
+
+<script src="static/js/compile.js"></script>
+
+</body>
+</html>

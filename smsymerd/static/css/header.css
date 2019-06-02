@@ -1,0 +1,65 @@
+body{
+    background: #f2f2f2;
+}
+
+
+.title {
+    background: #546e8b42;
+    width: 100%;
+    height: 50px;
+    padding: 0 5%;
+    position: relative;
+}
+
+.title-brand-section {
+    height: 100%;
+    position: relative;
+    top: 0;
+    bottom: 0;
+
+    float: left;
+}
+
+.title-brand {
+    color: #000;
+    font-weight: bold;
+    font-size: 20px;
+    line-height: 50px;
+}
+
+.title-brand:hover {
+    color: #000;
+    text-decoration: none;
+}
+
+.title-section {
+    height: 100%;
+    position: relative;
+    top: 0;
+    bottom: 0;
+    width: fit-content;
+    float: left;
+    margin-left: 50%;
+}
+
+.section {
+    float: left;
+    font-size: 15px;
+    padding: 0 10px;
+    height: 100%;
+    line-height: 50px;
+}
+
+.section:hover {
+    background: #11111111;
+    cursor: pointer;
+}
+
+.section-active {
+    float: left;
+    font-size: 15px;
+    padding: 0 10px;
+    height: 100%;
+    line-height: 50px;
+    background: #f2f2f2;
+}

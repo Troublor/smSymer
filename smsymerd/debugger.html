@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SmSymer - Debugger</title>
+    <link href="static/css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="static/js/jquery-3.4.1.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <!-- split.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.5.9/split.min.js"></script>
+    <!-- business logic -->
+    <script src="static/js/disasm.js"></script>
+    <style>
+        .view {
+            height: 500px;
+            border: 1px lightgrey solid;
+            border-radius: 5px;
+            overflow-y: auto;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
+        }
+
+        .lineNumber {
+            float: left;
+            background: lightblue;
+            padding-top: 10px;
+            text-align: right;
+            padding-bottom: 10px;
+        }
+
+        .assemblyView {
+            background: red;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        .asm-row {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>SmSymer - Debugger</h2>
+    <hr>
+    <div class="row">
+        <div class="col">
+            <div class="btn-toolbar">
+                <div class="btn-group" role="group" aria-label="Basic example">
+                    <button id="disasmBtn" type="button" class="btn btn-secondary">Disasm</button>
+                    <button type="button" class="btn btn-secondary">Middle</button>
+                    <button type="button" class="btn btn-secondary">Right</button>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="btn-toolbar float-right">
+                <div class="btn-group" role="group" aria-label="Basic example">
+                    <button type="button" class="btn btn-secondary">Left</button>
+                    <button type="button" class="btn btn-secondary">Middle</button>
+                    <button type="button" class="btn btn-secondary">Right</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-5">
+        <div id="leftView" class="view">
+            <textarea id="sourceCodeEditor" style="height: 100%; width: 100%; border: 0;"></textarea>
+        </div>
+        <div id="middleView" class="view">
+            <div id="lineNumber" class="lineNumber">
+
+            </div>
+            <div id="assemblyView" class="assemblyView">
+
+            </div>
+        </div>
+        <div id="rightView" class="view">Right</div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        window.Split(['#leftView', '#middleView', '#rightView'], {
+            minSize: [100, 100, 300],
+            cursor: 'col-resize',
+        });
+    });
+
+    $("#disasmBtn").click(function () {
+        disasmAsync($("#sourceCodeEditor").val()).then(function (instructions) {
+            $("#lineNumber").html("");
+            $("#assemblyView").html("");
+            instructions.forEach(function (ins, index) {
+                add_line(debugger + 1, ins);
+            });
+        }).catch(function (info) {
+            alert(info);
+        });
+    });
+
+    function add_line(line, instruction) {
+        $("#lineNumber").append("<div class='asm-row'>" + line + "</div>");
+        $("#assemblyView").append("<div class='asm-row'>" + instruction.toString() + "</div>");
+    }
+</script>
+</body>
+</html>

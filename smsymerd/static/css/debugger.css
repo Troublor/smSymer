@@ -1,0 +1,88 @@
+.debugger-view {
+    border: 1px lightgrey solid;
+    border-radius: 5px;
+    overflow-y: auto;
+    overflow-wrap: break-word;
+    overflow-x: hidden;
+    background: #fff;
+    height: 100%;
+}
+
+.debugger-control-view {
+    display: flex;
+    flex-direction: column;
+}
+
+.debugger-control {
+    display: flex;
+    justify-content: space-between;
+}
+
+.execution-status {
+    flex-grow: 1;
+    overflow: auto;
+
+}
+
+.lineNumber {
+    float: left;
+    background: lightblue;
+    padding-top: 10px;
+    text-align: right;
+    padding-bottom: 10px;
+}
+
+.lineNumber div:hover {
+    cursor: pointer;
+    background: greenyellow;
+}
+
+.breakpoint {
+    background: greenyellow;
+}
+
+.assemblyView {
+    background: transparent;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.bytecodeEditor {
+    border: 1px lightgrey solid;
+    border-radius: 5px;
+    overflow-y: auto;
+    overflow-wrap: break-word;
+    overflow-x: hidden;
+    background: #fff;
+    height: 100%;
+    width: 100%;
+    resize: none;
+}
+
+.asm-row {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.asm-active {
+    background: #00ff2645;
+}
+
+.item {
+    border-bottom: 1px solid black;
+}
+
+.key1 {
+
+}
+
+.key2 {
+
+}
+
+.value {
+    margin-left: 30px;
+}
