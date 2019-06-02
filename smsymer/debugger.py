@@ -156,6 +156,6 @@ class Debugger(object):
         for i in range(self._pc - n, self._pc + n + 1):
             if 0 <= i < len(self.instructions):
                 if i == self._pc:
-                    self._c_printer.green_print(str(self.instructions[i]))
+                    self._c_printer.green_print(str(self.instructions[i])+" <-")
                 else:
                     self._c_printer.print(str(self.instructions[i]))

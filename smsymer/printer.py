@@ -18,11 +18,13 @@ class Printer(object):
 
     @staticmethod
     def red_print(msg: str):
-        print("\033[0;31;m{0}\033[0m".format(msg))
+        # print("\033[0;31;m{0}\033[0m".format(msg))
+        print(msg)
 
     @staticmethod
     def green_print(msg: str):
-        print("\033[0;32;m{0}\033[0m".format(msg))
+        # print("\033[0;32;m{0}\033[0m".format(msg))
+        print(msg)
 
 
 class DPrinter(Printer):

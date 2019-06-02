@@ -45,7 +45,7 @@
                 </ul>
             </div>
             <div class="editor-container">
-                <textarea id="editor" class="editor"></textarea>
+                <textarea id="editor" class="editor" spellcheck="false"></textarea>
             </div>
             <div class="row">
 
@@ -85,7 +85,7 @@
 
             </div>
             <div class="logArea mt-3">
-                <p>Compile Log</p>
+                <p class="font-weight-bold">Compile Log</p>
                 <div class="log" id="log">
 
                 </div>
@@ -192,20 +192,20 @@
     <h5 class="mt-3">Analysis Result</h5>
     <div class="row">
         <div class="col-7" id="vulnerabilities-container">
-            <div class="vulnerability">
-                <div class="vul-type">Reentrancy</div>
-                <hr/>
-                <div class="vul-info">
-                    <div>Reentrancy-vulnerable Call at: <span>0x43 CALL</span></div>
-                    <div>Possible Guard Storage Variable:</div>
-                    <div>0x34 SLOAD</div>
-                    <div>0x34 SLOAD</div>
-                    <div>0x34 SLOAD</div>
-                </div>
-            </div>
-            <div class="vulnerability">
+<!--            <div class="vulnerability">-->
+<!--                <div class="vul-type">Reentrancy</div>-->
+<!--                <hr/>-->
+<!--                <div class="vul-info">-->
+<!--                    <div>Reentrancy-vulnerable Call at: <span>0x43 CALL</span></div>-->
+<!--                    <div>Possible Guard Storage Variable:</div>-->
+<!--                    <div>0x34 SLOAD</div>-->
+<!--                    <div>0x34 SLOAD</div>-->
+<!--                    <div>0x34 SLOAD</div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="vulnerability">-->
 
-            </div>
+<!--            </div>-->
         </div>
         <div class="col-5">
             <div class="analyzer-output">

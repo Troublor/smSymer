@@ -93,7 +93,7 @@ def analyze_cfg(cfg: CFG) -> List[dict]:
     if uncheck_call_report["vulnerable"]:
         for report in uncheck_call_report["spots"]:
             vul = {
-                "type": "uncheck_call",
+                "type": "unchecked_call",
                 "call_address": str(cfg.get_instruction(report["call_address"])),
             }
             resp.append(vul)

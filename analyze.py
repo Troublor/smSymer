@@ -1,6 +1,7 @@
 import functools
 import os
 import sys
+import uuid
 from threading import Thread
 from typing import List, Tuple, Dict
 import timeout_decorator
@@ -23,11 +24,13 @@ def timeout(timeout):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             res = [TimeoutException('function [%s] timeout [%s seconds] exceeded!' % (func.__name__, timeout))]
+
             def newFunc():
                 try:
                     res[0] = func(*args, **kwargs)
                 except Exception as e:
                     res[0] = e
+
             t = Thread(target=newFunc)
             t.daemon = True
             try:
@@ -40,8 +43,11 @@ def timeout(timeout):
             if isinstance(ret, BaseException):
                 raise ret
             return ret
+
         return wrapper
+
     return deco
+
 
 class CfgReport(object):
     def __init__(self):
@@ -210,23 +216,23 @@ def process(args):
                 if cfg_r.n_reentrancy > 0:
                     n_r += 1
                     break
-    c_printer.info("{0} files".format(f_total))
-    c_printer.info("{0} success analyzed files".format(f_success))
-    c_printer.info("{0} contracts".format(c_total))
+    c_printer.info("SmSymer analyzed {0} files".format(f_total))
+    c_printer.info("{0} success files, containing {0} contracts".format(f_success, c_total))
     c_printer.info("{0} success analyzed contracts".format(c_success))
     c_printer.info("{0} contracts contains Timestamp Dependency Vulnerability".format(n_td))
     c_printer.info("{0} contracts contains Unchecked Call Vulnerability".format(n_uc))
     c_printer.info("{0} contracts contains Reentrancy Vulnerability".format(n_r))
 
-    result_file = r"C:\Users\troub\Desktop\result"
-    result_printer = FPrinter(result_file)
-    result_printer.info("{0} files".format(f_total))
-    result_printer.info("{0} success analyzed files".format(f_success))
-    result_printer.info("{0} contracts".format(c_total))
-    result_printer.info("{0} success analyzed contracts".format(c_success))
-    result_printer.info("{0} contracts contains Timestamp Dependency Vulnerability".format(n_td))
-    result_printer.info("{0} contracts contains Unchecked Call Vulnerability".format(n_uc))
-    result_printer.info("{0} contracts contains Reentrancy Vulnerability".format(n_r))
+    # result_file = "C:\\Users\\troub\\Desktop\\result\\" + os.path.split(args.input[0])[-1]
+    #
+    # result_printer = FPrinter(result_file)
+    # result_printer.info("{0} files".format(f_total))
+    # result_printer.info("{0} success analyzed files".format(f_success))
+    # result_printer.info("{0} contracts".format(c_total))
+    # result_printer.info("{0} success analyzed contracts".format(c_success))
+    # result_printer.info("{0} contracts contains Timestamp Dependency Vulnerability".format(n_td))
+    # result_printer.info("{0} contracts contains Unchecked Call Vulnerability".format(n_uc))
+    # result_printer.info("{0} contracts contains Reentrancy Vulnerability".format(n_r))
 
 
 def process_dir(directory: str, args) -> Dict[str, FileReport]:
@@ -278,7 +284,7 @@ def process_dir(directory: str, args) -> Dict[str, FileReport]:
     return result
 
 
-@timeout(5)
+@timeout(300)
 def analyze(bytecode: str, result_printer: Printer, verbose=False) -> ContractReport:
     result = ContractReport()
     c_printer = CPrinter()
@@ -335,7 +341,7 @@ def analyze_cfg(cfg: CFG, result_printer: Printer, verbose=False) -> CfgReport:
     if reentrancy_report["vulnerable"]:
         result_printer.warn("found reentrancy vulnerability")
         result_printer.warn("---------------------------------------------------")
-        result.n_reentrancy = reentrancy_report["spots"]
+        result.n_reentrancy = len(reentrancy_report["spots"])
         for index, report in enumerate(reentrancy_report["spots"]):
             result_printer.warn("\t REENTRANCY {0}".format(index))
             result_printer.warn("\t \t  reentrancy call at {0}".format(

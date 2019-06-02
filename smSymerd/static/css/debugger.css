@@ -42,7 +42,7 @@
 }
 
 .assemblyView {
-    background: red;
+    background: transparent;
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
@@ -68,7 +68,7 @@
 }
 
 .asm-active {
-    background: #000000;
+    background: #00ff2645;
 }
 
 .item {
