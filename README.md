@@ -188,3 +188,6 @@ SmSymerd is a module of SmSymer Project, which offers users a solution to deploy
 
 To deploy SmSymerd Web Service, you need to run `smsymerd/httpserver.py` and `smsymerd/wsserver-compile.py` in two seperate process. Then, SmSymerd service will be available on port `5000`. 
 
+### Feedback
+
+We welcome all feedbacks from our users. If you encounter any problem, please open an issue in the [Issue Page](https://github.com/Troublor/smSymer/issues) of this project and clearly describe your problem. 
