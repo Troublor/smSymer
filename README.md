@@ -1,4 +1,4 @@
-# smSymer
+# SmSymer
 SmSymer is an Ethereum Smart Contract Static Analyzer based on symbolic execution. 
 
 This project is supported by [CASTLE Lab](http://sccpu2.cse.ust.hk/castle/index.html) of HKUST. 
