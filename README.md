@@ -13,6 +13,28 @@ Support for more vulnerability types will be available soon in the future.
 
 ---
 
+### Installation
+
+SmSymer requires python3. Make sure you have python3 installed and take the following steps: 
+
+1. clone the project
+```
+git clone https://github.com/Troublor/smSymer.git
+```
+
+2. Install dependent packages
+```
+cd smSymer
+python3 -m pip install -r requirements.txt
+```
+
+3. Start to use SmSymer! The main entrance is `main.py`
+```
+python3 main.py -h
+```
+
+---
+
 ### SmSymer (Command Line)
 
 #### Three Subcommands
