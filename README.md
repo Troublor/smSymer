@@ -69,7 +69,7 @@ type of source:
 
 specify where to output disassemble result:
   -r RESULT_DIR, --result RESULT_DIR
-                        					  the output directory, if don't give this option,the output will be printed in the console
+                        the output directory, if don't give this option,the output will be printed in the console
 ```
 
 #### Subcommand: analyze
@@ -105,7 +105,7 @@ type of source:
 
 specify where to output analysis result:
   -r RESULT, --result RESULT
-                       						  the output directory, if don't give this option, the output will be printed in the console
+                       	the output directory, if don't give this option, the output will be printed in the console
 ```
 
 #### Subcommand: debug
