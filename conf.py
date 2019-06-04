@@ -1,1 +1,1 @@
-ROOT_DIR = r"C:\OneDrive\troubleLearning\毕业设计\smSymer"
+ROOT_DIR = r"/home/troublor/pyprojects/SimFuzzer"

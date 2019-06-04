@@ -15,6 +15,7 @@ class ReentrancyTracker(RefTracker):
         self.storage_changed = False
 
         self.gas_guarded = False
+        self.value0 = False
 
         self.changed_after_condition = False
         self.changed_before_call = False
@@ -52,23 +53,25 @@ class ReentrancyTracker(RefTracker):
             self.pop(instruction.input_amount, len(stack))
             self.new(len(stack) - instruction.input_amount)
             gas = stack[-1]
+            value = stack[-3]
             if not utils.is_symbol(gas) and (int(gas) == 0 or int(gas) == 2300):
                 self.gas_guarded = True
                 return
             if '2300' in str(gas):
                 self.gas_guarded = True
                 return
-            if not self.after_call and self.storage_changed:
-                self.changed_before_call = True
+            if value == 0:
+                self.value0 = True
+                return
                 # There is no reentrancy bug only when some storage values used in path conditions
                 # are changed after the condition and before the call operation
-                if not self.changed_after_condition or not self.changed_before_call:
-                    self.buggy = True
-                    self.vulnerable_calls.append(instruction.addr)
-                    # clear detection history, be prepare for the next reentrancy
-                    self.after_call = False
-                    self.changed_before_call = False
-                    return
+            if not self.changed_after_condition or not self.changed_before_call:
+                self.buggy = True
+                self.vulnerable_calls.append(instruction.addr)
+                # clear detection history, be prepare for the next reentrancy
+                self.after_call = False
+                self.changed_before_call = False
+                return
             self.after_call = True
         else:
             self.pop(instruction.input_amount, len(stack))

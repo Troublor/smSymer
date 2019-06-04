@@ -188,6 +188,14 @@ def process(args):
             else:
                 c_printer.info("finish analyzing {0}".format(s))
             result[i] = f_r
+
+    t_result_file = "/home/troublor/Desktop/result/t_contracts"
+    t_r_printer = FPrinter(t_result_file)
+    u_result_file = "/home/troublor/Desktop/result/u_contracts"
+    u_r_printer = FPrinter(u_result_file)
+    r_result_file = "/home/troublor/Desktop/result/r_contracts"
+    r_r_printer = FPrinter(r_result_file)
+
     c_printer.info("***********************************")
     f_total = 0
     f_success = 0
@@ -196,7 +204,7 @@ def process(args):
     n_td = 0
     n_uc = 0
     n_r = 0
-    for f_r in result.values():
+    for filename, f_r in result.items():
         f_total += 1
         if f_r.success:
             f_success += 1
@@ -207,17 +215,20 @@ def process(args):
             for cfg_r in c_r.cfg_reports:
                 if cfg_r.n_timestamp_dependency > 0:
                     n_td += 1
+                    # t_r_printer.print(filename)
                     break
             for cfg_r in c_r.cfg_reports:
                 if cfg_r.n_unchecked_call > 0:
                     n_uc += 1
+                    # u_r_printer.print(filename)
                     break
             for cfg_r in c_r.cfg_reports:
                 if cfg_r.n_reentrancy > 0:
                     n_r += 1
+                    # r_r_printer.print(filename)
                     break
     c_printer.info("SmSymer analyzed {0} files".format(f_total))
-    c_printer.info("{0} success files, containing {0} contracts".format(f_success, c_total))
+    c_printer.info("{0} success files, containing {1} contracts".format(f_success, c_total))
     c_printer.info("{0} success analyzed contracts".format(c_success))
     c_printer.info("{0} contracts contains Timestamp Dependency Vulnerability".format(n_td))
     c_printer.info("{0} contracts contains Unchecked Call Vulnerability".format(n_uc))

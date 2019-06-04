@@ -28,8 +28,12 @@ class AnalysisVM(EVM):
             ref.update(instruction, self._stack)
         # check if there are new references
         if instruction.opcode in ['CALL', "STATICCALL", "DELEGATECALL", "CALLCODE"]:
-            # new call result reference is generated
             h = len(self._stack) - instruction.input_amount
+            if len(self.reentrancy_references) == 0:
+                tmp = ReentrancyTracker(instruction.addr, h, None)
+                tmp.buggy = True
+                self.reentrancy_references.append(tmp)
+            # new call result reference is generated
             call_ref = CallResultTracker(instruction.addr, h)
             self.call_result_references.append(call_ref)
         elif instruction.opcode == "TIMESTAMP":

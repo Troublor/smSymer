@@ -2,9 +2,6 @@ z3
 pycryptodome
 z3-solver
 argparse
-grpcio
-grpcio-tools
-protobuf
 flask
 websockets
 pytest
