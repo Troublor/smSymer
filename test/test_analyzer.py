@@ -29,7 +29,7 @@ def test_unchecked_call0():
     bytecodes = utils.compile_sol(file)[0]
     instructions = disasm(bytecodes)
     symer = Analyzer(instructions)
-    assert symer.body_cfg.check_unchecked_call()["vulnerable"]
+    assert not symer.body_cfg.check_unchecked_call()["vulnerable"]
 
 
 def test_unchecked_call1():
@@ -85,3 +85,13 @@ def test_reentrancy3():
     symer = Analyzer(instructions)
 
     assert symer.body_cfg.check_reentrancy()["vulnerable"]
+
+
+def test_reentrancy4():
+    cwd = getcwd()
+    file = path.join(cwd, 'reentrancy4.sol')
+    bytecodes = utils.compile_sol(file)[0]
+    instructions = disasm(bytecodes)
+    symer = Analyzer(instructions)
+
+    assert not symer.body_cfg.check_reentrancy()["vulnerable"]

@@ -54,6 +54,10 @@ class ReentrancyTracker(RefTracker):
             self.new(len(stack) - instruction.input_amount)
             gas = stack[-1]
             value = stack[-3]
+            to = stack[-2]
+            if not utils.is_symbol(to):
+                # 如果目的地址是一个确定的值，说明接收人是可信的
+                return
             if not utils.is_symbol(gas) and (int(gas) == 0 or int(gas) == 2300):
                 self.gas_guarded = True
                 return

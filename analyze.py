@@ -4,7 +4,6 @@ import sys
 import uuid
 from threading import Thread
 from typing import List, Tuple, Dict
-import timeout_decorator
 
 from cprinter import CPrinter
 from fprinter import FPrinter

@@ -1,4 +1,5 @@
 import copy
+from typing import List
 
 from Crypto.Hash import keccak
 from z3 import BoolRef, Not, Int, Z3Exception, is_to_int, IntSort
@@ -17,6 +18,9 @@ l_word = 32
 
 class EVM(object):
     def __init__(self):
+        # 预处理时用于存储可变的storage变量的地址
+        self.mutable_storage_addresses: list = []
+
         # TODO limit the max depth of stack to 1024
         global l_word
         l_word = 32
@@ -479,13 +483,19 @@ class EVM(object):
 
     def SLOAD(self):
         op0 = self._stack_pop()
-        s = self._storage[op0]
-        self._stack_push(self._storage[op0])
+        if op0 not in self.mutable_storage_addresses:
+            # 如果storage不可变
+            self._stack_push(self._storage[op0])
+        else:
+            # 如果Storage可变
+            self._stack_push(Int("s_" + str(op0)))
 
     def SSTORE(self):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
         self._storage[op0] = op1
+        if op0 not in self.mutable_storage_addresses:
+            self.mutable_storage_addresses.append(op0)
 
     def JUMP(self) -> PcPointer:
         op0 = self._stack_pop()

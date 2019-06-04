@@ -7,7 +7,8 @@ class Storage(object):
 
     def __getitem__(self, item):
         if item not in self._storage.keys():
-            self._storage[item] = Int("s_" + str(item))
+            # self._storage[item] = Int("s_" + str(item))
+            self._storage[item] = 0
         return self._storage[item]
 
     def __setitem__(self, key, value):

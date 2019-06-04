@@ -33,9 +33,11 @@ class AnalysisVM(EVM):
                 tmp = ReentrancyTracker(instruction.addr, h, None)
                 tmp.buggy = True
                 self.reentrancy_references.append(tmp)
-            # new call result reference is generated
-            call_ref = CallResultTracker(instruction.addr, h)
-            self.call_result_references.append(call_ref)
+            if utils.is_symbol(self._stack[-2]):
+                # 只有当目的地址不是一个确定值，也就是说不可靠的时候
+                # new call result reference is generated
+                call_ref = CallResultTracker(instruction.addr, h)
+                self.call_result_references.append(call_ref)
         elif instruction.opcode == "TIMESTAMP":
             # new timestamp reference is generated here
             ref = TimestampDepTracker(instruction.addr, len(self._stack))

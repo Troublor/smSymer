@@ -18,15 +18,17 @@ class Analyzer:
         if verbose:
             printer.info("Block division completed")
             printer.info("Total basic block number: {0}".format(len(c_blocks) + len(b_blocks)))
+        world_state = None
         if self.deployment:
             if verbose:
                 printer.info("Start constructing CFG in deployment code")
             self.construct_cfg = CFG(c_blocks, printer, verbose)
+            world_state = self.construct_cfg.vm.backup_world_state()
             if verbose:
                 printer.info("Constructing CFG in deployment code completed")
         if verbose:
             printer.info("Start constructing CFG in runtime code")
-        self.body_cfg = CFG(b_blocks, printer, verbose)
+        self.body_cfg = CFG(b_blocks, printer, verbose, world_state)
         if verbose:
             printer.info("Constructing CFG in runtime code completed")
 

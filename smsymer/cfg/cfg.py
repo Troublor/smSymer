@@ -8,7 +8,7 @@ from smsymer import Printer, utils
 from smsymer.analyzer import AnalysisVM, TimestampDepTracker, CallResultTracker, ReentrancyTracker
 from smsymer.analyzer.exception import AnalyzerException
 from smsymer.analyzer.tool import RefTracker
-from smsymer.evm import PcPointer
+from smsymer.evm import PcPointer, Storage
 from .block import Block
 from .transition import Transition
 
@@ -18,14 +18,13 @@ class CFG(object):
     Control Flow Graph
     """
 
-    def __init__(self, blocks: List[Block], printer: Printer, verbose=False):
+    def __init__(self, blocks: List[Block], printer: Printer, verbose=False, world_state=None):
         self.printer = printer
         self.verbose = verbose
         self.blocks = blocks
 
         self.transitions: List[Transition] = []
         self._construct_state = []
-        self.vm = AnalysisVM()
         if verbose:
             printer.info("Initialized Analysis Virtual Machine")
         self.buggy_refs: Dict[int, RefTracker] = {}
@@ -38,7 +37,24 @@ class CFG(object):
             self.block_dict[block.address] = block
         if verbose:
             printer.info("Start symbolic execution")
+
+        mutable_addresses = []
+
+        if world_state is not None:
+            # 先前world state的情况，进行预处理
+            self.vm = AnalysisVM()
+            self.vm.retrieve_world_state(world_state)
+            self._build_transitions()
+            mutable_addresses = self.vm.mutable_storage_addresses
+            self.transitions = []
+            self._construct_state = []
+            self.buggy_refs = {}
+            self.branch_entry_state = {}
+            self.block_dict = {}
+        self.vm = AnalysisVM()
+        self.vm.mutable_storage_addresses = mutable_addresses
         self._build_transitions()
+
         if verbose:
             printer.info("Symbolic execution completed")
             n = 0
