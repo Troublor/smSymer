@@ -115,3 +115,4 @@ gen
 
 local_test/
 smsymerd/tmp/
+/evaluation.py
