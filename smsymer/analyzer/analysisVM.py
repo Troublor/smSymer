@@ -4,6 +4,7 @@ from typing import List
 from z3 import simplify, Z3Exception, eq
 
 from smsymer import utils
+from smsymer.analyzer import MutableStorageTracker
 from smsymer.evm import EVM, Instruction, PcPointer
 from .tool import RefTracker
 from .reentrancyTracker import ReentrancyTracker
@@ -17,6 +18,7 @@ class AnalysisVM(EVM):
         self.call_result_references: List[RefTracker] = []
         self.timestamp_references: List[RefTracker] = []
         self.reentrancy_references: List[ReentrancyTracker] = []
+        self.mutable_storage_references: List[MutableStorageTracker] = []
 
     @property
     def trackers(self):
@@ -25,19 +27,24 @@ class AnalysisVM(EVM):
     def _update_all_ref_tracker(self, instruction: Instruction):
         # update all the references
         for ref in self.call_result_references + self.timestamp_references + self.reentrancy_references:
-            ref.update(instruction, self._stack)
+            ref.update(instruction, self._stack, self.mutable_storage_references)
         # check if there are new references
         if instruction.opcode in ['CALL', "STATICCALL", "DELEGATECALL", "CALLCODE"]:
             h = len(self._stack) - instruction.input_amount
             if len(self.reentrancy_references) == 0:
+                # 如果之前没有任何Storage被读取，也就是为创建任何ReentrancyTracker，那么当前的这个Call就是有reentrancy bug的
                 tmp = ReentrancyTracker(instruction.addr, h, None)
                 tmp.buggy = True
                 self.reentrancy_references.append(tmp)
-            if utils.is_symbol(self._stack[-2]):
-                # 只有当目的地址不是一个确定值，也就是说不可靠的时候
-                # new call result reference is generated
-                call_ref = CallResultTracker(instruction.addr, h)
-                self.call_result_references.append(call_ref)
+            # 判断Call的目的地址是否是可变的（mutable）
+            for ref in self.mutable_storage_references:
+                if ref.contains(len(self._stack) - 2):
+                    # 当前的目的地址包含在某一个mutable storage reference中
+                    # 只有当目的地址不是一个确定值，也就是说不可靠的时候
+                    # new call result reference is generated
+                    call_ref = CallResultTracker(instruction.addr, h)
+                    self.call_result_references.append(call_ref)
+                    break
         elif instruction.opcode == "TIMESTAMP":
             # new timestamp reference is generated here
             ref = TimestampDepTracker(instruction.addr, len(self._stack))
@@ -45,18 +52,26 @@ class AnalysisVM(EVM):
         elif instruction.opcode == "SLOAD":
             storage_addr = self._stack[-1]
             h = len(self._stack) - instruction.input_amount
+            # 检查是否需要新建MutableStorageTracker
+            if storage_addr in self.mutable_storage_addresses:
+                # 是可变的（mutable)
+                ref = MutableStorageTracker(instruction.addr, h, storage_addr)
+                self.mutable_storage_references.append(ref)
+            # 检查是否需要新建ReentrancyTracker
             for r in self.reentrancy_references:
                 # check if there already exists the same reference
-                try:
-                    if utils.is_symbol(storage_addr) and utils.is_symbol(r.storage_addr) and eq(
-                            simplify(r.storage_addr), simplify(storage_addr)) or not utils.is_symbol(
+                if utils.is_symbol(storage_addr) and utils.is_symbol(r.storage_addr) and eq(
+                        simplify(r.storage_addr), simplify(storage_addr)) or not utils.is_symbol(
                         storage_addr) and not utils.is_symbol(r.storage_addr) and r.storage_addr == storage_addr:
-                        r.new(h)
-                        return
-                except Z3Exception:
-                    print('z3 exception')
-            ref = ReentrancyTracker(instruction.addr, h, storage_addr)
-            self.reentrancy_references.append(ref)
+                    r.new(h)
+                    break
+            else:
+                ref = ReentrancyTracker(instruction.addr, h, storage_addr)
+                self.reentrancy_references.append(ref)
+
+        # 更新mutable storage reference
+        for ref in self.mutable_storage_references:
+            ref.update(instruction, self._stack)
 
     @classmethod
     def init_state(cls) -> list:

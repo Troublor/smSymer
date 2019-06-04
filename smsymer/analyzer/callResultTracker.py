@@ -15,7 +15,7 @@ class CallResultTracker(RefTracker):
     def root_cause_addr(self):
         return self.addr
 
-    def op(self, instruction: Instruction, stack: Stack):
+    def op(self, instruction: Instruction, stack: Stack, *args):
         # cases that the result of call is actually checked
         if instruction.opcode == "JUMPI":
             self.use(instruction, len(stack))
