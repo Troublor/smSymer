@@ -39,7 +39,7 @@ def process(args):
                     c_printer.info("start disassembling {0}".format(s))
                     try:
                         if args.source:
-                            bytecode = utils.compile_sol(s)[0]
+                            _, bytecode = utils.compile_sol(s)[0]
                         else:
                             bytecode = ''.join(file.readlines())
                         if args.result is not None:
@@ -104,7 +104,7 @@ def process_dir(directory: str, args):
                 c_printer.info("start disassembling {0}".format(os.path.join(directory, item)))
                 try:
                     if args.source:
-                        bytecode = utils.compile_sol(os.path.join(directory, item))[0]
+                        _, bytecode = utils.compile_sol(os.path.join(directory, item))[0]
                     else:
                         bytecode = ''.join(file.readlines())
                     if args.result is not None:

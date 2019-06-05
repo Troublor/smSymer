@@ -40,7 +40,7 @@ class ReentrancyTracker(RefTracker):
     def is_buggy(self):
         return self.buggy
 
-    def op(self, instruction: Instruction, stack: Stack, *args):
+    def op(self, instruction: Instruction, stack: Stack, immutable_storage_references):
         # cases that storage variables are used in the path condition of a CALL operation
         if instruction.opcode == "JUMPI":
             # make sure that the condition is the direct condition of CALL, WRONG, but may have false positives...
@@ -57,13 +57,11 @@ class ReentrancyTracker(RefTracker):
             gas = stack[-1]
             value = stack[-3]
             # 检测目的地址是否和是一个不确定的值（mutable）
-            mutable_storage_references = args[0]
-            for ref in mutable_storage_references:
+            for ref in immutable_storage_references:
                 if ref.contains(len(stack) - 2):
-                    break
-            else:
-                # 如果目的地址是一个确定的值，说明接收人是可信的
-                return
+                    # 如果目的地址是一个确定的值，说明接收人是可信的
+                    return
+
             if not utils.is_symbol(gas) and (int(gas) == 0 or int(gas) == 2300):
                 self.gas_guarded = True
                 return

@@ -17,8 +17,9 @@ l_word = 32
 
 
 class EVM(object):
-    def __init__(self):
+    def __init__(self, pre_process = False):
         # 预处理时用于存储可变的storage变量的地址
+        self.pre_process = pre_process
         self.mutable_storage_addresses: list = []
 
         # TODO limit the max depth of stack to 1024
@@ -119,7 +120,7 @@ class EVM(object):
         return world_state_bak
 
     def retrieve_world_state(self, bak):
-        self._storage = bak.pop()
+        self._storage = bak[-1]
 
     def backup_machine_state(self):
         s = copy.deepcopy(self._stack)
@@ -483,7 +484,7 @@ class EVM(object):
 
     def SLOAD(self):
         op0 = self._stack_pop()
-        if op0 not in self.mutable_storage_addresses:
+        if not utils.in_list(self.mutable_storage_addresses, op0):
             # 如果storage不可变
             self._stack_push(self._storage[op0])
         else:
@@ -494,7 +495,7 @@ class EVM(object):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
         self._storage[op0] = op1
-        if op0 not in self.mutable_storage_addresses:
+        if not utils.in_list(self.mutable_storage_addresses, op0) and self.pre_process:
             self.mutable_storage_addresses.append(op0)
 
     def JUMP(self) -> PcPointer:

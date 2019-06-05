@@ -1,6 +1,7 @@
 import functools
 import os
 import sys
+import traceback
 import uuid
 from threading import Thread
 from typing import List, Tuple, Dict
@@ -120,13 +121,13 @@ def process(args):
                         else:
                             bytecodes = ''.join(file.readlines())
 
-                        for bytecode in bytecodes:
+                        for contract_name, bytecode in bytecodes:
                             if args.result is not None:
                                 filename = os.path.splitext(s)[0] + ".txt"
                                 f_printer = FPrinter(filename=os.path.join(args.result, filename))
-                                c_r = analyze(bytecode, f_printer)
+                                c_r = analyze(bytecode, contract_name, f_printer)
                             else:
-                                c_r = analyze(bytecode, c_printer)
+                                c_r = analyze(bytecode, contract_name, c_printer)
                             f_r.add(c_r)
                     except AttributeError as e:
                         c_printer.error(str(e))
@@ -168,9 +169,9 @@ def process(args):
                 if args.result is not None:
                     filename = str(i) + ".txt"
                     f_printer = FPrinter(filename=os.path.join(args.result, filename))
-                    c_r = analyze(bytecode, f_printer)
+                    c_r = analyze(bytecode, '', f_printer)
                 else:
-                    c_r = analyze(bytecode, c_printer)
+                    c_r = analyze(bytecode, '', c_printer)
                 f_r.add(c_r)
             except AttributeError as e:
                 c_printer.error(str(e))
@@ -267,17 +268,18 @@ def process_dir(directory: str, args) -> Dict[str, FileReport]:
                         bytecodes = utils.compile_sol(os.path.join(directory, item), args.t_runtime)
                     else:
                         bytecodes = ''.join(file.readlines())
-                    for bytecode in bytecodes:
+                    for contract_name, bytecode in bytecodes:
                         if args.result is not None:
                             filename = os.path.join(args.result, os.path.split(directory)[0], item + ".txt")
                             f_printer = FPrinter(filename=filename)
-                            c_r = analyze(bytecode, f_printer)
+                            c_r = analyze(bytecode, contract_name, f_printer)
                             f_r.add(c_r)
                         else:
-                            c_r = analyze(bytecode, c_printer)
+                            c_r = analyze(bytecode, contract_name, c_printer)
                             f_r.add(c_r)
                 except AttributeError as e:
                     c_printer.error(str(e))
+                    traceback.print_exc()
                     c_printer.warn("fail to analyze {0}".format(os.path.join(directory, item)))
                 except AnalyzerException as e:
                     c_printer.warn("Unsupported feature: {}".format(e))
@@ -287,6 +289,7 @@ def process_dir(directory: str, args) -> Dict[str, FileReport]:
                     c_printer.warn("fail to analyze {0}".format(os.path.join(directory, item)))
                 except Exception as e:
                     c_printer.error("SmSymer internal Error: {}".format(e))
+                    traceback.print_exc()
                     c_printer.warn("fail to analyze {0}".format(os.path.join(directory, item)))
                 else:
                     c_printer.info("finish analyzing {0}".format(os.path.join(directory, item)))
@@ -294,24 +297,28 @@ def process_dir(directory: str, args) -> Dict[str, FileReport]:
     return result
 
 
-@timeout(300)
-def analyze(bytecode: str, result_printer: Printer, verbose=False) -> ContractReport:
+# @timeout(300)
+def analyze(bytecode: str, contract_name, result_printer: Printer, verbose=False) -> ContractReport:
+    result_printer.info("***************************************************")
+    result_printer.info("Analyzing contract: {0}".format(contract_name))
     result = ContractReport()
     c_printer = CPrinter()
     instructions = ByteCode.disasm(bytecode, c_printer)
 
+    result_printer.info("Symbolically executing")
     analyzer = Analyzer(instructions, result_printer, verbose)
     # analyze construction code
     result_printer.info("Checking construction assemble code")
     cfg_r = analyze_cfg(analyzer.construct_cfg, result_printer)
     result.add(cfg_r)
     result_printer.info("Checking construction assemble code...done")
-    result_printer.info("===================================================")
+    result_printer.info("- - - - - - - - - - - - - - - - - - - - - - - - - -")
     # analyze body code
     result_printer.info("Checking runtime assemble code")
     cfg_r = analyze_cfg(analyzer.body_cfg, result_printer, verbose)
     result.add(cfg_r)
     result_printer.info("Checking runtime assemble code...done")
+    result_printer.info("***************************************************")
     return result
 
 

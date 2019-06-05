@@ -1,9 +1,10 @@
 import os
+import re
 import subprocess
 import sys
-from typing import List
+from typing import List, Dict, Tuple
 
-from z3 import BoolRef, Solver, Z3_L_TRUE, Z3_L_FALSE, is_expr
+from z3 import BoolRef, Solver, Z3_L_TRUE, Z3_L_FALSE, is_expr, z3
 
 from conf import ROOT_DIR
 from smsymer import Printer, DPrinter
@@ -14,7 +15,7 @@ def is_symbol(var):
     return is_expr(var)
 
 
-def compile_sol(sol_filename, runtime=False) -> List[str]:
+def compile_sol(sol_filename, runtime=False) -> List[Tuple[str, str]]:
     # solc_path = os.path.join(ROOT_DIR, 'tools', "solc.exe")
     solc_path = "solc"
     if runtime:
@@ -25,13 +26,17 @@ def compile_sol(sol_filename, runtime=False) -> List[str]:
     is_bin = False
     lines = p.stdout.readlines()
     results = []
+    contract_name = ""
     for line in lines:
         if is_bin:
             bytecode = str(line, encoding='utf-8').strip()
             if len(bytecode) > 0:
-                results.append(bytecode)
+                results.append((contract_name, bytecode))
             is_bin = False
-        if "Binary" in str(line):
+        match_obj = re.match(r'=======.*:(.*?)=======', str(line, encoding='utf-8'))
+        if match_obj:
+            contract_name = match_obj.group(1).strip()
+        if "Binary" in str(line, encoding='utf-8'):
             is_bin = True
     if len(results) > 0:
         return results
@@ -99,3 +104,15 @@ def int2bytes(content, l_word=-1, type_=int) -> List:
         else:
             r.append(type_(tmp[i:i + 1]))
     return r
+
+
+def in_list(list: list, item) -> bool:
+    for l in list:
+        if is_symbol(l) and is_symbol(item):
+            if z3.eq(l, item):
+                return True
+        elif not is_symbol(l) and not is_symbol(item):
+            if int(l) == int(item):
+                return True
+    else:
+        return False

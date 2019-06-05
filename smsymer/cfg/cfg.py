@@ -42,7 +42,7 @@ class CFG(object):
 
         if world_state is not None:
             # 先前world state的情况，进行预处理
-            self.vm = AnalysisVM()
+            self.vm = AnalysisVM(pre_process=True)
             self.vm.retrieve_world_state(world_state)
             self._build_transitions()
             mutable_addresses = self.vm.mutable_storage_addresses
@@ -51,7 +51,9 @@ class CFG(object):
             self.buggy_refs = {}
             self.branch_entry_state = {}
             self.block_dict = {}
-        self.vm = AnalysisVM()
+        self.vm = AnalysisVM(pre_process=False)
+        if world_state is not None:
+            self.vm.retrieve_world_state(world_state)
         self.vm.mutable_storage_addresses = mutable_addresses
         self._build_transitions()
 
@@ -155,8 +157,8 @@ class CFG(object):
             pc_i = 0
             while True:
                 ins = block[pc_i]
-                if ins.opcode is None:
-                    print(ins)
+                # if ins.opcode is "CALL":
+                #     print(ins)
                 pc_pointer = self.vm.exe(ins)
                 if pc_pointer.status == PcPointer.NEXT_ADDR:
                     if pc_i == len(block) - 1:
@@ -303,7 +305,12 @@ class CFG(object):
 
                 for addr in ref.vulnerable_calls:
                     for index, report in enumerate(r["spots"].copy()):
-                        if addr == report["call_address"] and ref.storage_addr not in report["storage_addresses"]:
+                        if addr is None:
+                            print(1)
+                        if report["call_address"] is None:
+                            print(2)
+                        if addr == report["call_address"] and not utils.in_list(report["storage_addresses"],
+                                                                                ref.storage_addr):
                             r["spots"][index]["storage_addresses"].append(ref.storage_addr)
                             break
                     else:
@@ -316,7 +323,7 @@ class CFG(object):
         # check calls without associated storage variable
         for rr in self.check_unchecked_call()["spots"]:
             for ref in self.vm.reentrancy_references:
-                if rr["call_address"] in ref.checked_calls:
+                if utils.in_list(ref.checked_calls, rr["call_address"]):
                     break
             else:
                 r["vulnerable"] = True

@@ -15,7 +15,7 @@ class RefTracker(object):
         self.used: bool = False
         self.use_addrs: List[int] = []
 
-    def update(self, instruction: Instruction, stack: Stack, *args):
+    def update(self, instruction: Instruction, stack: Stack, immutable_storage_references):
         stack_len = len(stack)
         if instruction.opcode == "POP":
             self.pop(1, stack_len)
@@ -34,7 +34,7 @@ class RefTracker(object):
         elif instruction.opcode == "SHA3":
             self.sha3(stack_len)
         else:
-            self.op(instruction, stack, args)
+            self.op(instruction, stack, immutable_storage_references)
 
     def new(self, h):
         self.h_list.append(h)
@@ -118,7 +118,7 @@ class RefTracker(object):
         # need implementation, the logic of buggy
         return self.used
 
-    def op(self, instruction: Instruction, stack: Stack, *args):
+    def op(self, instruction: Instruction, stack: Stack, immutable_storage_references):
         # need implementation, define how to deal with other operations
         # by default, it view every other operation as use of the reference
         self.use(instruction, len(stack))

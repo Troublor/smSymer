@@ -15,16 +15,9 @@ class TimestampDepTracker(RefTracker):
     def root_cause_addr(self):
         return self.addr
 
-    def op(self, instruction: Instruction, stack: Stack, *args):
+    def op(self, instruction: Instruction, stack: Stack, immutable_storage_references):
         # cases that the timestamp is used in conditional jump
         if instruction.opcode == "JUMPI":
-            # 如果参与运算的没有可变Storage，那么说明不存在timestamp dependency
-            mutable_references = args[0]
-            for ref in mutable_references:
-                if ref.contains(len(stack) - 2):
-                    break
-            else:
-                return
             not_used_before = not self.used
             self.use(instruction, len(stack))
             if not_used_before and self.used:

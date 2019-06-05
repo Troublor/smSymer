@@ -144,48 +144,48 @@ class Word(object):
 
     def __lt__(self, other):
         if int(self) < int(other):
-            return Word(1)
+            return 1
         else:
-            return Word(0)
+            return 0
 
     def __gt__(self, other):
         if int(self) > int(other):
-            return Word(1)
+            return 1
         else:
-            return Word(0)
+            return 0
 
     def slt(self, other):
         if self.is_neg():
             if not other.is_neg():
-                return Word(1)
+                return 1
             elif abs(self) > abs(other):
-                return Word(1)
+                return 1
             else:
-                return Word(0)
+                return 0
         elif other.is_neg():
-            return Word(0)
+            return 0
         elif abs(self) < abs(other):
-            return Word(1)
+            return 1
         else:
-            return Word(0)
+            return 0
 
     def sgt(self, other):
         if self.slt(other) and self == other:
-            return Word(0)
+            return 0
         else:
-            return Word(1)
+            return 1
 
     def __eq__(self, other):
         if int(other) == int(self):
-            return Word(1)
+            return 1
         else:
-            return Word(0)
+            return 0
 
     def is_zero(self):
         if int(self) == 0:
-            return Word(1)
+            return 1
         else:
-            return Word(0)
+            return 0
 
     def __and__(self, other):
         return Word(int(self) & int(other))
