@@ -117,3 +117,4 @@ local_test/
 smsymerd/tmp/
 /evaluation.py
 /data/
+/filter.py

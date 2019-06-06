@@ -189,12 +189,12 @@ def process(args):
                 c_printer.info("finish analyzing {0}".format(s))
             result[i] = f_r
 
-    t_result_file = "/home/troublor/Desktop/result/t_contracts"
-    t_r_printer = FPrinter(t_result_file)
-    u_result_file = "/home/troublor/Desktop/result/u_contracts"
-    u_r_printer = FPrinter(u_result_file)
-    r_result_file = "/home/troublor/Desktop/result/r_contracts"
-    r_r_printer = FPrinter(r_result_file)
+    # t_result_file = "/home/troublor/Desktop/result/t_contracts"
+    # t_r_printer = FPrinter(t_result_file)
+    # u_result_file = "/home/troublor/Desktop/result/u_contracts"
+    # u_r_printer = FPrinter(u_result_file)
+    # r_result_file = "/home/troublor/Desktop/result/r_contracts"
+    # r_r_printer = FPrinter(r_result_file)
 
     c_printer.info("***********************************")
     f_total = 0
