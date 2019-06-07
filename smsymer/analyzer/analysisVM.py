@@ -56,7 +56,7 @@ class AnalysisVM(EVM):
             # 检查是否需要新建MutableStorageTracker
             if not utils.in_list(self.mutable_storage_addresses, storage_addr):
                 # 是不可变的（immutable)
-                ref = ImmutableStorageTracker(instruction.addr, h, storage_addr)
+                ref = ImmutableStorageTracker(instruction.addr, h, storage_addr, self._storage[storage_addr])
                 self.immutable_storage_references.append(ref)
             # 检查是否需要新建ReentrancyTracker
             for r in self.reentrancy_references:
@@ -112,6 +112,8 @@ class AnalysisVM(EVM):
             bak = {}
             for ref in self.reentrancy_references:
                 bak[ref] = self._storage[ref.storage_addr]
+        if instruction.opcode == "SLOAD":
+            print(instruction)
         pc_pointer = super().exe(instruction)
         if instruction.opcode == "SSTORE":
             # check if any referred storage variable is changed after SSTORE

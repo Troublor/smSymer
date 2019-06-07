@@ -38,6 +38,9 @@ class CFG(object):
         if verbose:
             printer.info("Start symbolic execution")
 
+        # 若当前为合约部署字节码的CFG，此变量用于保存正常RETURN命令执行完成后（正常部署成功）的Storage
+        self.normally_return_world_state = None
+
         mutable_addresses = []
 
         if world_state is not None:
@@ -157,8 +160,6 @@ class CFG(object):
             pc_i = 0
             while True:
                 ins = block[pc_i]
-                # if ins.opcode is "CALL":
-                #     print(ins)
                 pc_pointer = self.vm.exe(ins)
                 if pc_pointer.status == PcPointer.NEXT_ADDR:
                     if pc_i == len(block) - 1:
@@ -169,6 +170,8 @@ class CFG(object):
                     else:
                         pc_i = pc_i + 1
                 elif pc_pointer.status == PcPointer.STOP:
+                    if ins.opcode == "RETURN":
+                        self.normally_return_world_state = self.vm.backup_world_state()
                     # print("END AT-" + str(block) + "-" + str(recursion_depth))
                     bak = self.vm.backup()
                     self.branch_entry_state[block.lass_address] = copy.deepcopy(bak)

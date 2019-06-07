@@ -23,6 +23,15 @@ def test_timestamp_dependency1():
     assert not symer.body_cfg.check_timestamp_dependency()["vulnerable"]
 
 
+def test_timestamp_dependency2():
+    cwd = getcwd()
+    file = path.join(cwd, 'timestamp_dependency2.sol')
+    _, bytecodes = utils.compile_sol(file)[0]
+    instructions = disasm(bytecodes)
+    symer = Analyzer(instructions)
+    assert not symer.body_cfg.check_timestamp_dependency()["vulnerable"]
+
+
 def test_unchecked_call0():
     cwd = getcwd()
     file = path.join(cwd, 'unchecked_call0.sol')
@@ -95,3 +104,14 @@ def test_reentrancy4():
     symer = Analyzer(instructions)
 
     assert not symer.body_cfg.check_reentrancy()["vulnerable"]
+
+
+def test_reentrancy5():
+    cwd = getcwd()
+    file = path.join(cwd, 'test/reentrancy5.sol')
+    _, bytecodes = utils.compile_sol(file)[0]
+    instructions = disasm(bytecodes)
+    symer = Analyzer(instructions)
+
+    assert not symer.body_cfg.check_reentrancy()["vulnerable"]
+

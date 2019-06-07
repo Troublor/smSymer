@@ -12,6 +12,8 @@ class Analyzer:
         self.instructions = instructions
         self.printer = printer
         self.verbose = verbose
+        for ins in instructions:
+            print(ins)
         if verbose:
             printer.info("Start dividing basic blocks")
         c_blocks, b_blocks = self._construct_blocks()
@@ -23,7 +25,7 @@ class Analyzer:
             if verbose:
                 printer.info("Start constructing CFG in deployment code")
             self.construct_cfg = CFG(c_blocks, printer, verbose)
-            world_state = self.construct_cfg.vm.backup_world_state()
+            world_state = self.construct_cfg.normally_return_world_state
             if verbose:
                 printer.info("Constructing CFG in deployment code completed")
         if verbose:

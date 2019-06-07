@@ -116,3 +116,18 @@ def in_list(list: list, item) -> bool:
                 return True
     else:
         return False
+
+
+def extract_z3_ref(ref) -> list:
+    children = ref.children()
+    if len(children) == 0:
+        return [ref]
+    else:
+        results = []
+        for child in children:
+            results = results + extract_z3_ref(child)
+        return results
+
+
+def is_z3_constant(ref) -> bool:
+    return type(ref) is z3.IntNumRef
