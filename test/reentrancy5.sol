@@ -34,7 +34,7 @@ contract TRUEToken  {
 
     // forward all eth to founder
     function() payable {
-        if (!founder.call.value(msg.value)()) revert(); 
+        if (!founder.call.value(msg.value)()) revert();
     }
 
 

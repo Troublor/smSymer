@@ -149,9 +149,10 @@ class CFG(object):
 
     def _build_transitions(self):
         recursion_depth = 0
+        path_condition = []
 
         def _traverse_block_recursively(pc_b):
-            nonlocal recursion_depth
+            nonlocal recursion_depth, path_condition
             try:
                 block = self.blocks[pc_b]
             except IndexError as e:
@@ -160,11 +161,12 @@ class CFG(object):
             pc_i = 0
             while True:
                 ins = block[pc_i]
-                pc_pointer = self.vm.exe(ins)
+                pc_pointer = self.vm.exe_with_path_condition(ins, path_condition)
                 if pc_pointer.status == PcPointer.NEXT_ADDR:
                     if pc_i == len(block) - 1:
                         bak = self.vm.backup()
                         self.branch_entry_state[block.lass_address] = copy.deepcopy(bak)
+                        self._add_transition(block, self.blocks[pc_b + 1])
                         _traverse_block_recursively(pc_b + 1)
                         break
                     else:
@@ -206,7 +208,9 @@ class CFG(object):
                     if not is_loop:
                         # print("BRANCH-1: {0}".format(self.blocks[pc_bb]))
                         bak = self.vm.backup()
+                        path_condition.append(pc_pointer.condition)
                         _traverse_block_recursively(pc_bb)
+                        path_condition.pop()
                         # save the buggy references before trace back
                         for tracker in self.vm.trackers:
                             if tracker.is_buggy and tracker.addr not in self.buggy_refs:
@@ -218,7 +222,9 @@ class CFG(object):
                     is_loop = self._add_transition(last_block, self.blocks[pc_bb], Not(pc_pointer.condition))
                     if not is_loop:
                         # print("BRANCH-2: {0}".format(self.blocks[pc_bb]))
+                        path_condition.append(Not(pc_pointer.condition))
                         _traverse_block_recursively(pc_bb)
+                        path_condition.pop()
                     # print("END-BRANCH-" + str(recursion_depth))
                     recursion_depth -= 1
                     break
@@ -229,7 +235,7 @@ class CFG(object):
         bak = self.vm.backup()
         self.vm.retrieve(init_state)
         for ins in reduce(lambda l1, l2: l1 + l2, map(lambda block: block.instructions, block_seq)):
-            self.vm.exe(ins)
+            self.vm.exe_with_path_condition(ins)
             if ins.addr == stop_addr:
                 break
         self.vm.retrieve(bak)
@@ -307,21 +313,27 @@ class CFG(object):
                 r["vulnerable"] = True
 
                 for addr in ref.vulnerable_calls:
-                    for index, report in enumerate(r["spots"].copy()):
-                        if addr is None:
-                            print(1)
-                        if report["call_address"] is None:
-                            print(2)
-                        if addr == report["call_address"] and not utils.in_list(report["storage_addresses"],
-                                                                                ref.storage_addr):
-                            r["spots"][index]["storage_addresses"].append(ref.storage_addr)
+                    for r_ref in self.vm.reentrancy_references:
+                        if addr in r_ref.checked_calls and addr not in r_ref.vulnerable_calls:
+                            # 如果有另一个Storage会阻止该call的重入，那就不存在reentrancy漏洞
                             break
                     else:
-                        report = {
-                            "call_address": addr,
-                            "storage_addresses": [ref.storage_addr],
-                        }
-                        r["spots"].append(report)
+                        # 所有的reentrancyTracker都 要么没有检查该call，要么检查了并认为其有重入漏洞
+                        for index, report in enumerate(r["spots"].copy()):
+                            if addr is None:
+                                print(1)
+                            if report["call_address"] is None:
+                                print(2)
+                            if addr == report["call_address"] and not utils.in_list(report["storage_addresses"],
+                                                                                    ref.storage_addr):
+                                r["spots"][index]["storage_addresses"].append(ref.storage_addr)
+                                break
+                        else:
+                            report = {
+                                "call_address": addr,
+                                "storage_addresses": [ref.storage_addr],
+                            }
+                            r["spots"].append(report)
 
         # check calls without associated storage variable
         for rr in self.check_unchecked_call()["spots"]:

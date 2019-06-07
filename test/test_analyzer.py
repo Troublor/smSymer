@@ -32,6 +32,15 @@ def test_timestamp_dependency2():
     assert not symer.body_cfg.check_timestamp_dependency()["vulnerable"]
 
 
+def test_timestamp_dependency3():
+    cwd = getcwd()
+    file = path.join(cwd, 'timestamp_dependency3.sol')
+    _, bytecodes = utils.compile_sol(file)[0]
+    instructions = disasm(bytecodes)
+    symer = Analyzer(instructions)
+    assert not symer.body_cfg.check_timestamp_dependency()["vulnerable"]
+
+
 def test_unchecked_call0():
     cwd = getcwd()
     file = path.join(cwd, 'unchecked_call0.sol')
@@ -93,7 +102,7 @@ def test_reentrancy3():
     instructions = disasm(bytecodes)
     symer = Analyzer(instructions)
 
-    assert symer.body_cfg.check_reentrancy()["vulnerable"]
+    assert not symer.body_cfg.check_reentrancy()["vulnerable"]
 
 
 def test_reentrancy4():
@@ -108,7 +117,37 @@ def test_reentrancy4():
 
 def test_reentrancy5():
     cwd = getcwd()
-    file = path.join(cwd, 'test/reentrancy5.sol')
+    file = path.join(cwd, 'reentrancy5.sol')
+    _, bytecodes = utils.compile_sol(file)[0]
+    instructions = disasm(bytecodes)
+    symer = Analyzer(instructions)
+
+    assert not symer.body_cfg.check_reentrancy()["vulnerable"]
+
+
+def test_reentrancy6():
+    cwd = getcwd()
+    file = path.join(cwd, 'reentrancy6.sol')
+    _, bytecodes = utils.compile_sol(file)[0]
+    instructions = disasm(bytecodes)
+    symer = Analyzer(instructions)
+
+    assert symer.body_cfg.check_reentrancy()["vulnerable"]
+
+
+def test_reentrancy7():
+    cwd = getcwd()
+    file = path.join(cwd, 'reentrancy7.sol')
+    _, bytecodes = utils.compile_sol(file)[0]
+    instructions = disasm(bytecodes)
+    symer = Analyzer(instructions)
+
+    assert not symer.body_cfg.check_reentrancy()["vulnerable"]
+
+
+def test_reentrancy8():
+    cwd = getcwd()
+    file = path.join(cwd, 'reentrancy8.sol')
     _, bytecodes = utils.compile_sol(file)[0]
     instructions = disasm(bytecodes)
     symer = Analyzer(instructions)

@@ -1,4 +1,5 @@
 import copy
+import decimal
 from typing import List
 
 from Crypto.Hash import keccak
@@ -14,10 +15,10 @@ from .pcPointer import PcPointer
 from .exception import EvmExecutionException
 
 l_word = 32
-
+sha3_map = {}
 
 class EVM(object):
-    def __init__(self, pre_process = False):
+    def __init__(self, pre_process=False):
         # 预处理时用于存储可变的storage变量的地址
         self.pre_process = pre_process
         self.mutable_storage_addresses: list = []
@@ -177,13 +178,17 @@ class EVM(object):
     def DIV(self):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
-        self._stack_push(op0 / op1)
+        if not utils.is_symbol(op0) and not utils.is_symbol(op1):
+            decimal.getcontext().prec = 65
+            self._stack_push(int(decimal.Decimal(op0) / decimal.Decimal(op1)))
+        else:
+            self._stack_push(op0 / op1)
 
     def SDIV(self):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
         if not utils.is_symbol(op0) and not utils.is_symbol(op1):
-            self._stack_push(op0 // op1)
+            self._stack_push(int(op0 // op1))  # TODO 浮点运算丢失精度
         else:
             self._stack_push(Int("(" + str(op0) + "//" + str(op1) + ")"))
 
@@ -288,7 +293,14 @@ class EVM(object):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
         if utils.is_symbol(op0) or utils.is_symbol(op1):
-            self._stack_push(Int(str(op0) + "&" + str(op1)))
+            address_mask = 0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffff
+            if not utils.is_symbol(op0) and op0 == address_mask:
+                self._stack_push(op1)
+            elif not utils.is_symbol(op1) and op1 == address_mask:
+                self._stack_push(op0)
+            else:
+                self._stack_push(Int(str(op0) + "&" + str(op1)))
+            # self._stack_push(Int(str(op0) + "&" + str(op1)))
         else:
             self._stack_push(op0 & op1)
 
@@ -338,16 +350,23 @@ class EVM(object):
         op1 = self._stack_pop()
         # m_slice = self._memory[int(op0):int(op0) + int(op1)]
         value = self._memory.load(op0, op1)
-        if utils.is_symbol(value):
-            self._stack_push(Int("SHA3_{0}".format(self._pc)))
-            return
+        global sha3_map
+        if value in sha3_map.keys():
+            self._stack_push(sha3_map[value])
         else:
-            value = bytes(utils.int2bytes(value, type_=int))
-            keccak_hash = keccak.new(digest_bits=8 * l_word)
-            keccak_hash.update(value)
-            hash_value = keccak_hash.hexdigest()
-            self._stack_push(Word(hash_value))
-            return
+            if utils.is_symbol(value):
+                sha3_value = Int("SHA3_{0}".format(self._pc))
+                self._stack_push(sha3_value)
+                sha3_map[value] = sha3_value
+                return
+            else:
+                value1 = bytes(utils.int2bytes(value, type_=int))
+                keccak_hash = keccak.new(digest_bits=8 * l_word)
+                keccak_hash.update(value1)
+                hash_value = keccak_hash.hexdigest()
+                self._stack_push(Word(hash_value))
+                sha3_map[value] = Word(hash_value)
+                return
 
     def ADDRESS(self):
         self._stack_push(Int("Ia"))
@@ -495,8 +514,6 @@ class EVM(object):
         op0 = self._stack_pop()
         op1 = self._stack_pop()
         self._storage[op0] = op1
-        if not utils.in_list(self.mutable_storage_addresses, op0) and self.pre_process:
-            self.mutable_storage_addresses.append(op0)
 
     def JUMP(self) -> PcPointer:
         op0 = self._stack_pop()

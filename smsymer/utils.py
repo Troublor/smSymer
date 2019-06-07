@@ -129,5 +129,26 @@ def extract_z3_ref(ref) -> list:
         return results
 
 
+def extract_z3_symbols(ref) -> list:
+    result = []
+    for r in extract_z3_ref(ref):
+        if not is_z3_constant(r):
+            result.append(r)
+    return result
+
+
 def is_z3_constant(ref) -> bool:
     return type(ref) is z3.IntNumRef
+
+
+def eq(a, b) -> bool:
+    if is_symbol(a):
+        if is_symbol(b):
+            return z3.eq(a, b)
+        else:
+            return False
+    else:
+        if is_symbol(b):
+            return False
+        else:
+            return a == b

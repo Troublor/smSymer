@@ -202,12 +202,14 @@ def process(args):
     c_total = 0
     c_success = 0
     n_td = 0
+    n_td_f = 0
     n_uc = 0
     n_r = 0
     for filename, f_r in result.items():
         f_total += 1
         if f_r.success:
             f_success += 1
+        has_timestamp = False
         for c_r in f_r.c_reports:
             c_total += 1
             if c_r.success:
@@ -215,6 +217,7 @@ def process(args):
             for cfg_r in c_r.cfg_reports:
                 if cfg_r.n_timestamp_dependency > 0:
                     n_td += 1
+                    has_timestamp = True
                     # t_r_printer.print(filename)
                     break
             for cfg_r in c_r.cfg_reports:
@@ -227,12 +230,15 @@ def process(args):
                     n_r += 1
                     # r_r_printer.print(filename)
                     break
+        if has_timestamp:
+            n_td_f += 1
     c_printer.info("SmSymer analyzed {0} files".format(f_total))
     c_printer.info("{0} success files, containing {1} contracts".format(f_success, c_total))
     c_printer.info("{0} success analyzed contracts".format(c_success))
     c_printer.info("{0} contracts contains Timestamp Dependency Vulnerability".format(n_td))
     c_printer.info("{0} contracts contains Unchecked Call Vulnerability".format(n_uc))
     c_printer.info("{0} contracts contains Reentrancy Vulnerability".format(n_r))
+    c_printer.info("{0} files contains Timestamp Dependency Vulnerability".format(n_td_f))
 
     # result_file = "C:\\Users\\troub\\Desktop\\result\\" + os.path.split(args.input[0])[-1]
     #
@@ -366,6 +372,6 @@ def analyze_cfg(cfg: CFG, result_printer: Printer, verbose=False) -> CfgReport:
             if len(report["storage_addresses"]) > 0:
                 result_printer.warn("\t \t  possible guard storage variable")
             for addr in report["storage_addresses"]:
-                result_printer.warn("\t \t  \tstorage variable loaded at {0}".format(cfg.get_instruction(addr)))
+                result_printer.warn("\t \t  \tstorage variable loaded at {0}".format(addr))
             result_printer.warn("---------------------------------------------------")
     return result

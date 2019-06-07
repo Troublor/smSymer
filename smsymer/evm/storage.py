@@ -14,5 +14,8 @@ class Storage(object):
     def __setitem__(self, key, value):
         self._storage[key] = value
 
+    def __len__(self):
+        return len(self._storage)
+
     def get_storage(self) -> dict:
         return self._storage

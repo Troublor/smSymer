@@ -1,4 +1,5 @@
 from smsymer.analyzer.tool import RefTracker
+from smsymer.evm import Instruction, Stack
 
 
 class ImmutableStorageTracker(RefTracker):
@@ -16,3 +17,6 @@ class ImmutableStorageTracker(RefTracker):
         :return:
         """
         return h in self.h_list
+
+    def op(self, instruction: Instruction, stack: Stack, immutable_storage_references):
+        self.pop(instruction.input_amount, len(stack))

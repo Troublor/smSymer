@@ -1,7 +1,7 @@
 import copy
 from typing import List
 
-from z3 import simplify, Z3Exception, eq
+from z3 import simplify, Z3Exception, eq, z3
 
 from smsymer import utils
 from .immutableStorageTracker import ImmutableStorageTracker
@@ -15,6 +15,7 @@ from .timestampDepTracker import TimestampDepTracker
 class AnalysisVM(EVM):
     def __init__(self, pre_process=False):
         super().__init__(pre_process)
+        self.pre_process = pre_process
         self.call_result_references: List[RefTracker] = []
         self.timestamp_references: List[RefTracker] = []
         self.reentrancy_references: List[ReentrancyTracker] = []
@@ -56,8 +57,14 @@ class AnalysisVM(EVM):
             # 检查是否需要新建MutableStorageTracker
             if not utils.in_list(self.mutable_storage_addresses, storage_addr):
                 # 是不可变的（immutable)
-                ref = ImmutableStorageTracker(instruction.addr, h, storage_addr, self._storage[storage_addr])
-                self.immutable_storage_references.append(ref)
+                for ref in self.immutable_storage_references:
+                    if utils.eq(ref.storage_addr, storage_addr):
+                        ref.new(h)
+                        ref.new_born = True
+                        break
+                else:
+                    ref = ImmutableStorageTracker(instruction.addr, h, storage_addr, self._storage[storage_addr])
+                    self.immutable_storage_references.append(ref)
             # 检查是否需要新建ReentrancyTracker
             for r in self.reentrancy_references:
                 # check if there already exists the same reference
@@ -71,8 +78,6 @@ class AnalysisVM(EVM):
                     print(e)
             else:
                 ref = ReentrancyTracker(instruction.addr, h, storage_addr)
-                if instruction.addr == 332 and storage_addr == 0:
-                    print()
                 self.reentrancy_references.append(ref)
 
         # 更新mutable storage reference
@@ -105,29 +110,59 @@ class AnalysisVM(EVM):
         self.call_result_references = []
         self.timestamp_references = []
 
-    def exe(self, instruction: Instruction) -> PcPointer:
+    def exe_with_path_condition(self, instruction: Instruction, path_condition: list = []) -> PcPointer:
         self._update_all_ref_tracker(instruction)
         if instruction.opcode == "SSTORE":
             # save the value of every referred storage variable before SSTORE
             bak = {}
             for ref in self.reentrancy_references:
                 bak[ref] = self._storage[ref.storage_addr]
-        if instruction.opcode == "SLOAD":
-            print(instruction)
+        if instruction.opcode == "SSTORE" and self.pre_process:
+            op0 = self._stack[-1]
+            # 在可信条件下进行修改的Storage变量仍然是可信的（immutable）
+            caller = z3.Int("Is")
+            solver = z3.Solver()
+            solver.add(path_condition)
+            if "sat" == str(solver.check()):
+                for storage_addr, storage_value in self._storage.get_storage().items():
+                    if not utils.in_list(self.mutable_storage_addresses, storage_addr):
+                        # solver.add(caller & 0xffffffffffffffffffff != storage_value & 0xffffffffffffffffffff)
+                        mask = 0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffff
+                        if utils.is_symbol(storage_value):
+                            # solver.add(z3.Int(str("Is") + "&" + str(mask)) != z3.Int(str(storage_value) + "&" + str(mask)))
+                            # solver.add(z3.Int(str(mask) + "&" + str("Is")) != z3.Int(str(storage_value) + "&" + str(mask)))
+                            # solver.add(z3.Int(str("Is") + "&" + str(mask)) != z3.Int(str(mask) + "&" + str(storage_value)))
+                            # solver.add(z3.Int(str(mask) + "&" + str("Is")) != z3.Int(str(mask) + "&" + str(storage_value)))
+                            # solver.add(z3.Int(str("Is")) != z3.Int(str(storage_value)))
+                            solver.add(z3.Int(str("Is")) != z3.Int(str(storage_value)))
+                        else:
+                            # solver.add(z3.Int(str("Is") + "&" + str(mask)) != storage_value & mask)
+                            # solver.add(z3.Int(str(mask) + "&" + str("Is")) != storage_value & mask)
+                            solver.add(z3.Int(str("Is")) != storage_value & mask)
+                if "sat" == str(solver.check()):
+                    # caller不为任意一个可信storage变量的时候仍然可能进行SSTORE,则说明被修改的storage变量是不可靠的
+                    if not utils.in_list(self.mutable_storage_addresses, op0):
+                        self.mutable_storage_addresses.append(op0)
         pc_pointer = super().exe(instruction)
         if instruction.opcode == "SSTORE":
             # check if any referred storage variable is changed after SSTORE
+            # if len(bak) != len(self._storage):
+            #     # 如果新增了Storage变量，那么一定是做修改了
+            #     ref.storage_changed = True
+            #     if ref.after_used_in_condition:
+            #         ref.changed_after_condition = True
+            #     if not ref.after_call:
+            #         ref.changed_before_call = True
+            # else:
+            # 如果Storage变量的个数没变，那么就检查每一个变量的值有没有改变
             for ref, value in bak.items():
-                try:
-                    if utils.is_symbol(value) is not utils.is_symbol(self._storage[ref.storage_addr]) or \
-                            utils.is_symbol(value) and not eq(simplify(value),
-                                                              simplify(self._storage[ref.storage_addr])) or \
-                            not utils.is_symbol(value) and value != self._storage[ref.storage_addr]:
-                        ref.storage_changed = True
-                        if ref.after_used_in_condition:
-                            ref.changed_after_condition = True
-                        if not ref.after_call:
-                            ref.changed_before_call = True
-                except Z3Exception as e:
-                    print(e)
+                if utils.is_symbol(value) is not utils.is_symbol(self._storage[ref.storage_addr]) or \
+                        utils.is_symbol(value) and not eq(simplify(value),
+                                                          simplify(self._storage[ref.storage_addr])) or \
+                        not utils.is_symbol(value) and value != self._storage[ref.storage_addr]:
+                    ref.storage_changed = True
+                    if ref.after_used_in_condition:
+                        ref.changed_after_condition = True
+                    if not ref.after_call:
+                        ref.changed_before_call = True
         return pc_pointer

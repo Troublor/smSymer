@@ -12,8 +12,8 @@ class Analyzer:
         self.instructions = instructions
         self.printer = printer
         self.verbose = verbose
-        for ins in instructions:
-            print(ins)
+        # for ins in instructions:
+        #     print(ins)
         if verbose:
             printer.info("Start dividing basic blocks")
         c_blocks, b_blocks = self._construct_blocks()

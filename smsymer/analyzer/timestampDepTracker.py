@@ -35,8 +35,8 @@ class TimestampDepTracker(RefTracker):
                         continue
                     else:
                         for ref in immutable_storage_references:
-                            if ref.contains(len(stack) - 2) and utils.is_symbol(ref.storage_value) and z3.eq(
-                                    ref.storage_value, z3_ref):
+                            if ref.contains(len(stack) - 2) and utils.is_symbol(ref.storage_value) and utils.in_list(
+                                    utils.extract_z3_ref(ref.storage_value), z3_ref):
                                 break
                         else:
                             # 不是一个不可变Storage变量
