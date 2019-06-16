@@ -16,8 +16,8 @@ def is_symbol(var):
 
 
 def compile_sol(sol_filename, runtime=False) -> List[Tuple[str, str]]:
-    # solc_path = os.path.join(ROOT_DIR, 'tools', "solc.exe")
-    solc_path = "solc"
+    solc_path = os.path.join(ROOT_DIR, 'tools', "solc.exe")
+    # solc_path = "solc"
     if runtime:
         cmd = solc_path + " --bin-runtime {0}".format(sol_filename)
     else:
